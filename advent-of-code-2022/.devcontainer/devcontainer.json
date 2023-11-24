@@ -1,0 +1,26 @@
+{
+	"name": "Ruby",
+	"image": "mcr.microsoft.com/devcontainers/ruby:3-bullseye",
+	"features": {
+		"ghcr.io/devcontainers/features/rust:1": {}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "cargo install aoc-cli",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+
+	"mounts": [
+		"source=/home/mchone/.adventofcode.session,target=/home/vscode/.adventofcode.session,type=bind,consistency=cached"
+	]
+}
