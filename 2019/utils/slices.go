@@ -18,7 +18,7 @@ func StringsToInts(arr []string) ([]int, error) {
 	return ints, nil
 }
 
-func Pop[V comparable](arr []V) ([]V) {
+func Pop[V comparable](arr []V) []V {
 	if len(arr) == 0 {
 		return arr
 	}

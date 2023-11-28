@@ -12,7 +12,7 @@ func PartOne(code string) (int, error) {
 
 	ints[1] = 12
 	ints[2] = 2
-	ints, _ = intcode.ExecuteIntcode(ints)
+	ints, _ = intcode.ExecuteIntcode(ints, []int{})
 
 	return ints[0], nil
 }
