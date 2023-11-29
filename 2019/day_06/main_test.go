@@ -85,3 +85,40 @@ func TestPartOne(t *testing.T) {
 
 	fmt.Printf("Day 6 Part 1: %d\n", count)
 }
+
+func DistanceBetween(orbits map[string]string, a, b string) int {
+
+	if a == b {
+		return 0
+	}
+
+	aDist := CountRecursive(orbits, a)
+	bDist := CountRecursive(orbits, b)
+
+	if aDist > bDist {
+		return 1 + DistanceBetween(orbits, orbits[a], b)
+	} else {
+		return 1 + DistanceBetween(orbits, a, orbits[b])
+	}
+}
+
+func PartTwo(input string) int {
+	orbits := ParseOrbits(input)
+
+	distance := DistanceBetween(orbits, orbits["YOU"], orbits["SAN"])
+
+	return distance
+}
+
+func TestPartTwo(t *testing.T) {
+	input := "COM)B\nB)C\nC)D\nD)E\nE)F\nB)G\nG)H\nD)I\nE)J\nJ)K\nK)L\nK)YOU\nI)SAN"
+
+	distance := PartTwo(input)
+
+	if distance != 4 {
+		t.Errorf("Expected SAN to be 4 orbits away from YOU, got %d", distance)
+	} else {
+		input = utils.ReadInput(6)
+		fmt.Printf("Day 6 part 2: %d\n", PartTwo(input))
+	}
+}
