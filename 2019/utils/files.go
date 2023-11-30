@@ -37,8 +37,6 @@ func ReadInput(day int) string {
 			Value: ReadFile("../.adventofcode.cookie"),
 		}
 
-		fmt.Println(cookie)
-
 		req.AddCookie(&cookie)
 
 		resp, err := client.Do(req)
