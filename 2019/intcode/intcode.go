@@ -61,85 +61,104 @@ the third parameter's mode is in the ten-thousands digit, and so on. Any missing
 Parameters that an instruction writes to will never be in immediate mode.
 */
 
-func ExecuteIntcodeFromString(intcode string, input []int) (program []int, output []int) {
-	prg, _ := utils.StringsToInts(strings.Split(intcode, ","))
-	return ExecuteIntcode(prg, input)
+type Computer struct {
+	Program []int
+	Input   chan int
+	Output  chan int
+	Halted  bool
 }
 
-func ExecuteIntcode(intcode []int, input []int) (program []int, output []int) {
-	program = make([]int, len(intcode))
-	copy(program, intcode)
+func NewComputerFromString(program string) *Computer {
+	prg, _ := utils.StringsToInts(strings.Split(program, ","))
 
-	output = []int{}
+	return NewComputer(prg)
+}
 
+func NewComputer(program []int) *Computer {
+	input := make(chan int, 100)
+	output := make(chan int, 100)
+
+	return &Computer{
+		Program: program,
+		Input:   input,
+		Output:  output,
+		Halted:  false,
+	}
+}
+
+// func ExecuteIntcodeFromString(intcode string, input []int) (program []int, output []int) {
+// 	prg, _ := utils.StringsToInts(strings.Split(intcode, ","))
+// 	return ExecuteIntcode(prg, input)
+// }
+
+func (computer *Computer) ExecuteIntcode() {
 	pos := 0
-	for pos < len(program) {
-		memoryValue := program[pos]
+	for pos < len(computer.Program) {
+		memoryValue := computer.Program[pos]
 		opcode := memoryValue % 100
 		parameterModes := (memoryValue - opcode) / 100
 
 		switch opcode {
 		case ADD:
-			args := program[pos : pos+4]
+			args := computer.Program[pos : pos+4]
 			a, b, nPos := args[1], args[2], args[3]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
-			program[nPos] = a + b
+			computer.Program[nPos] = a + b
 			pos += 4
 		case MULTIPLY:
-			args := program[pos : pos+4]
+			args := computer.Program[pos : pos+4]
 			a, b, nPos := args[1], args[2], args[3]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
-			program[nPos] = a * b
+			computer.Program[nPos] = a * b
 			pos += 4
 		case INPUT:
-			inputVal := input[0]
-			input = utils.Pop(input)
-			param := program[pos+1]
+			inputVal := <-computer.Input
+			param := computer.Program[pos+1]
 			pos += 2
 
-			program[param] = inputVal
+			computer.Program[param] = inputVal
 		case OUTPUT:
-			param := program[pos+1]
+			param := computer.Program[pos+1]
 			value := param
 			mode := parameterModes % 10
 			parameterModes /= 10
 
 			if mode == 0 {
-				value = program[value]
+				value = computer.Program[value]
 			}
 			pos += 2
 
-			output = append(output, value)
+			computer.Output <- value
 		case JUMP_IF_TRUE:
-			args := program[pos : pos+3]
+			args := computer.Program[pos : pos+3]
 			a, b := args[1], args[2]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
 
 			if a != 0 {
@@ -148,17 +167,17 @@ func ExecuteIntcode(intcode []int, input []int) (program []int, output []int) {
 				pos += 3
 			}
 		case JUMP_IF_FALSE:
-			args := program[pos : pos+3]
+			args := computer.Program[pos : pos+3]
 			a, b := args[1], args[2]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
 
 			if a == 0 {
@@ -167,49 +186,50 @@ func ExecuteIntcode(intcode []int, input []int) (program []int, output []int) {
 				pos += 3
 			}
 		case LESS_THAN:
-			args := program[pos : pos+4]
+			args := computer.Program[pos : pos+4]
 			a, b, nPos := args[1], args[2], args[3]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
 			if a < b {
-				program[nPos] = 1
+				computer.Program[nPos] = 1
 			} else {
-				program[nPos] = 0
+				computer.Program[nPos] = 0
 			}
 			pos += 4
 		case EQUALS:
-			args := program[pos : pos+4]
+			args := computer.Program[pos : pos+4]
 			a, b, nPos := args[1], args[2], args[3]
 			mode := parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				a = program[a]
+				a = computer.Program[a]
 			}
 			mode = parameterModes % 10
 			parameterModes /= 10
 			if mode == 0 {
-				b = program[b]
+				b = computer.Program[b]
 			}
 			if a == b {
-				program[nPos] = 1
+				computer.Program[nPos] = 1
 			} else {
-				program[nPos] = 0
+				computer.Program[nPos] = 0
 			}
 			pos += 4
 		case END_OF_PROGRAM:
-			pos = len(program)
+			pos = len(computer.Program)
+			computer.Halted = true
+			close(computer.Input)
+			close(computer.Output)
 		default:
-			panic(fmt.Sprintf("Unknown opcode %d", program[pos]))
+			panic(fmt.Sprintf("Unknown opcode %d", computer.Program[pos]))
 		}
 	}
-
-	return program, output
 }

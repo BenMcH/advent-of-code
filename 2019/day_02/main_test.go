@@ -8,7 +8,10 @@ import (
 )
 
 func TestPartOne(t *testing.T) {
-	got, _ := intcode.ExecuteIntcodeFromString("1,1,1,4,99,5,6,0,99", []int{})
+	computer := intcode.NewComputerFromString("1,1,1,4,99,5,6,0,99")
+	computer.ExecuteIntcode()
+
+	got := computer.Program
 
 	if got[0] != 30 {
 		t.Errorf("Got: %d, expected: 30", got)
@@ -32,7 +35,9 @@ func TestPartTwo(t *testing.T) {
 
 			program[1] = noun
 			program[2] = verb
-			program, _ = intcode.ExecuteIntcode(program, []int{})
+
+			computer := intcode.NewComputer(program)
+			computer.ExecuteIntcode()
 
 			if program[0] == 19690720 {
 				t.Logf("Day 2 Part 2: 100 * %d + %d = %d", noun, verb, 100*noun+verb)

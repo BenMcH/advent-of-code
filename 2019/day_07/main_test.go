@@ -48,29 +48,44 @@ func RunAmplificationCircuit(program string, phaseSettings []int) int {
 	phase := phaseSettings[0]
 	phaseSettings = phaseSettings[1:]
 
-	_, outputA := intcode.ExecuteIntcodeFromString(program, []int{phase, input})
+	a := intcode.NewComputerFromString(program)
+	a.Input <- phase
+	a.Input <- input
+	a.ExecuteIntcode()
 
 	phase = phaseSettings[0]
 	phaseSettings = phaseSettings[1:]
-	input = outputA[0]
-	_, outputB := intcode.ExecuteIntcodeFromString(program, []int{phase, input})
+	input = <-a.Output
+	b := intcode.NewComputerFromString(program)
+	b.Input <- phase
+	b.Input <- input
+	b.ExecuteIntcode()
 
 	phase = phaseSettings[0]
 	phaseSettings = phaseSettings[1:]
-	input = outputB[0]
-	_, outputC := intcode.ExecuteIntcodeFromString(program, []int{phase, input})
+	input = <-b.Output
+	c := intcode.NewComputerFromString(program)
+	c.Input <- phase
+	c.Input <- input
+	c.ExecuteIntcode()
 
 	phase = phaseSettings[0]
 	phaseSettings = phaseSettings[1:]
-	input = outputC[0]
-	_, outputD := intcode.ExecuteIntcodeFromString(program, []int{phase, input})
+	input = <-c.Output
+	d := intcode.NewComputerFromString(program)
+	d.Input <- phase
+	d.Input <- input
+	d.ExecuteIntcode()
 
 	phase = phaseSettings[0]
 	// phaseSettings = phaseSettings[1:]
-	input = outputD[0]
-	_, outputE := intcode.ExecuteIntcodeFromString(program, []int{phase, input})
+	input = <-d.Output
+	e := intcode.NewComputerFromString(program)
+	e.Input <- phase
+	e.Input <- input
+	e.ExecuteIntcode()
 
-	return outputE[0]
+	return <-e.Output
 }
 
 func TestRunAmplificationCircuit(t *testing.T) {

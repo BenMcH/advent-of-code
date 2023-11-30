@@ -12,7 +12,8 @@ func PartOne(code string) (int, error) {
 
 	ints[1] = 12
 	ints[2] = 2
-	ints, _ = intcode.ExecuteIntcode(ints, []int{})
+	computer := intcode.NewComputer(ints)
+	computer.ExecuteIntcode()
 
-	return ints[0], nil
+	return computer.Program[0], nil
 }
