@@ -62,15 +62,12 @@ func RunAmplificationCircuit(program string, phaseSettings []int, phaseOffset in
 	a.Input <- 0
 
 	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
-
 	b.Input <- phase + phaseOffset
 
 	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
-
 	c.Input <- phase + phaseOffset
 
 	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
-
 	d.Input <- phase + phaseOffset
 
 	phase = phaseSettings[0]
@@ -82,7 +79,17 @@ func RunAmplificationCircuit(program string, phaseSettings []int, phaseOffset in
 	go d.ExecuteIntcode()
 	go e.ExecuteIntcode()
 
-	return <-e.Output
+	output := -1
+
+	for eOutput := range e.Output {
+		output = eOutput
+
+		if phaseOffset != 0 {
+			a.Input <- output
+		}
+	}
+
+	return output
 }
 
 func TestRunAmplificationCircuit(t *testing.T) {
@@ -135,4 +142,22 @@ func TestPartOne(t *testing.T) {
 	}
 
 	fmt.Printf("Day 7 Part 1: %d\n", max)
+}
+
+func TestPartTwo(t *testing.T) {
+	combos := GenerateCombinations()
+
+	program := utils.ReadInput(7)
+
+	max := -1
+
+	for _, phase := range combos {
+		val := RunAmplificationCircuit(program, phase, 5)
+
+		if val > max {
+			max = val
+		}
+	}
+
+	fmt.Printf("Day 7 Part 2: %d\n", max)
 }
