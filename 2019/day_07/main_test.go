@@ -43,47 +43,44 @@ func TestCombinations(t *testing.T) {
 	}
 }
 
-func RunAmplificationCircuit(program string, phaseSettings []int) int {
-	input := 0
+func RunAmplificationCircuit(program string, phaseSettings []int, phaseOffset int) int {
 	phase := phaseSettings[0]
 	phaseSettings = phaseSettings[1:]
 
 	a := intcode.NewComputerFromString(program)
-	a.Input <- phase
-	a.Input <- input
-	a.ExecuteIntcode()
-
-	phase = phaseSettings[0]
-	phaseSettings = phaseSettings[1:]
-	input = <-a.Output
 	b := intcode.NewComputerFromString(program)
-	b.Input <- phase
-	b.Input <- input
-	b.ExecuteIntcode()
-
-	phase = phaseSettings[0]
-	phaseSettings = phaseSettings[1:]
-	input = <-b.Output
 	c := intcode.NewComputerFromString(program)
-	c.Input <- phase
-	c.Input <- input
-	c.ExecuteIntcode()
-
-	phase = phaseSettings[0]
-	phaseSettings = phaseSettings[1:]
-	input = <-c.Output
 	d := intcode.NewComputerFromString(program)
-	d.Input <- phase
-	d.Input <- input
-	d.ExecuteIntcode()
+	e := intcode.NewComputerFromString(program)
+
+	a.Output = b.Input
+	b.Output = c.Input
+	c.Output = d.Input
+	d.Output = e.Input
+
+	a.Input <- phase + phaseOffset
+	a.Input <- 0
+
+	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
+
+	b.Input <- phase + phaseOffset
+
+	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
+
+	c.Input <- phase + phaseOffset
+
+	phase, phaseSettings = phaseSettings[0], phaseSettings[1:]
+
+	d.Input <- phase + phaseOffset
 
 	phase = phaseSettings[0]
-	// phaseSettings = phaseSettings[1:]
-	input = <-d.Output
-	e := intcode.NewComputerFromString(program)
-	e.Input <- phase
-	e.Input <- input
-	e.ExecuteIntcode()
+	e.Input <- phase + phaseOffset
+
+	go a.ExecuteIntcode()
+	go b.ExecuteIntcode()
+	go c.ExecuteIntcode()
+	go d.ExecuteIntcode()
+	go e.ExecuteIntcode()
 
 	return <-e.Output
 }
@@ -113,7 +110,7 @@ func TestRunAmplificationCircuit(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.program, func(t *testing.T) {
-			got := RunAmplificationCircuit(test.program, test.phases)
+			got := RunAmplificationCircuit(test.program, test.phases, 0)
 
 			if got != test.expected {
 				t.Errorf("Expected amplification circuit to return %d, got: %d", test.expected, got)
@@ -130,7 +127,7 @@ func TestPartOne(t *testing.T) {
 	max := -1
 
 	for _, phase := range combos {
-		val := RunAmplificationCircuit(program, phase)
+		val := RunAmplificationCircuit(program, phase, 0)
 
 		if val > max {
 			max = val

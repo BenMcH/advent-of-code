@@ -93,6 +93,8 @@ func NewComputer(program []int) *Computer {
 
 func (computer *Computer) ExecuteIntcode() {
 	pos := 0
+	// defer close(computer.Input)
+	defer close(computer.Output)
 	for pos < len(computer.Program) {
 		memoryValue := computer.Program[pos]
 		opcode := memoryValue % 100
@@ -226,8 +228,6 @@ func (computer *Computer) ExecuteIntcode() {
 		case END_OF_PROGRAM:
 			pos = len(computer.Program)
 			computer.Halted = true
-			close(computer.Input)
-			close(computer.Output)
 		default:
 			panic(fmt.Sprintf("Unknown opcode %d", computer.Program[pos]))
 		}
