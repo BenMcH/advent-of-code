@@ -86,14 +86,8 @@ func NewComputer(program []int) *Computer {
 	}
 }
 
-// func ExecuteIntcodeFromString(intcode string, input []int) (program []int, output []int) {
-// 	prg, _ := utils.StringsToInts(strings.Split(intcode, ","))
-// 	return ExecuteIntcode(prg, input)
-// }
-
 func (computer *Computer) ExecuteIntcode() {
 	pos := 0
-	// defer close(computer.Input)
 	defer close(computer.Output)
 	for pos < len(computer.Program) {
 		memoryValue := computer.Program[pos]
