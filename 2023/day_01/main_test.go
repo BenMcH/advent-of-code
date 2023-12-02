@@ -37,8 +37,8 @@ func TestPartOne(t *testing.T) {
 
 func TestAdvancedNumbers(t *testing.T) {
 	input := utils.ReadInput(1)
-	input = strings.ReplaceAll(input, "two", "t2o")
 	input = strings.ReplaceAll(input, "eight", "8t")
+	input = strings.ReplaceAll(input, "two", "2o")
 	input = strings.ReplaceAll(input, "one", "1")
 	input = strings.ReplaceAll(input, "three", "3")
 	input = strings.ReplaceAll(input, "four", "4")
