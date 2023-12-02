@@ -9,50 +9,26 @@ import (
 )
 
 type Game struct {
-	blue, red, green int
+	id, blue, red, green int
 }
 
-func ParseGame(rounds []string) Game {
-	g := Game{}
+func ParseGame(game string) Game {
+	sections := strings.Split(game, ":")
+	id, _ := strconv.Atoi(strings.Split(sections[0], " ")[1])
+	rounds := strings.Split(sections[1], "; ")
+	g := Game{id: id}
 	for _, round := range rounds {
 		moves := strings.Split(strings.TrimLeft(round, " "), ", ")
 		for _, move := range moves {
 			vals := strings.Split(move, " ")
 			num, _ := strconv.Atoi(vals[0])
 
-			if strings.HasPrefix(vals[1], "blue") {
+			if strings.Contains(vals[1], "blue") && num > g.blue {
 				g.blue = num
-			} else if strings.HasPrefix(vals[1], "red") {
+			} else if strings.Contains(vals[1], "red") && num > g.red {
 				g.red = num
-			} else if strings.HasPrefix(vals[1], "green") {
+			} else if strings.Contains(vals[1], "green") && num > g.green {
 				g.green = num
-			} else {
-				fmt.Println("No idea", vals)
-			}
-
-			if !g.PartOnePossible() {
-				return g
-			}
-		}
-	}
-	return g
-}
-func ParseGame2(rounds []string) Game {
-	g := Game{}
-	for _, round := range rounds {
-		moves := strings.Split(strings.TrimLeft(round, " "), ", ")
-		for _, move := range moves {
-			vals := strings.Split(move, " ")
-			num, _ := strconv.Atoi(vals[0])
-
-			if strings.HasPrefix(vals[1], "blue") && num > g.blue {
-				g.blue = num
-			} else if strings.HasPrefix(vals[1], "red") && num > g.red {
-				g.red = num
-			} else if strings.HasPrefix(vals[1], "green") && num > g.green {
-				g.green = num
-			} else {
-				fmt.Println("No idea", vals)
 			}
 
 		}
@@ -73,14 +49,10 @@ func TestPartOne(t *testing.T) {
 
 	sum := 0
 	for _, game := range games {
-		sections := strings.Split(game, ":")
-		id, _ := strconv.Atoi(strings.Split(sections[0], " ")[1])
-		rounds := strings.Split(sections[1], "; ")
-		game := ParseGame(rounds)
-		fmt.Println(game)
+		game := ParseGame(game)
 
 		if game.PartOnePossible() {
-			sum += id
+			sum += game.id
 		}
 	}
 
@@ -93,9 +65,7 @@ func TestPartTwo(t *testing.T) {
 
 	sum := 0
 	for _, game := range games {
-		sections := strings.Split(game, ":")
-		rounds := strings.Split(sections[1], "; ")
-		game := ParseGame2(rounds)
+		game := ParseGame(game)
 		sum += game.Power()
 	}
 
