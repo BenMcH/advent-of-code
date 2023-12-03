@@ -8,27 +8,27 @@ import (
 	"unicode"
 )
 
-func ExtractNumberAt(grid utils.Grid, point utils.Point) string {
+func ExtractNumberAt(grid utils.Grid, point utils.Point) int {
 	point = utils.Point{X: point.X, Y: point.Y}
 
 	for point.X > grid.MinX && unicode.IsDigit(grid.Data[point.Left()]) {
 		point = point.Left()
 	}
 
-	runes := make([]rune, 0)
-	runes = append(runes, grid.Data[point])
+	runes := []rune{grid.Data[point]}
 
 	for unicode.IsDigit(grid.Data[point.Right()]) {
 		point = point.Right()
 		runes = append(runes, grid.Data[point])
 	}
 
-	return string(runes)
+	num, _ := strconv.Atoi(string(runes))
+
+	return num
 }
 
 func IsSymbol(input rune) bool {
-	sym := input != '.' && !unicode.IsDigit(input)
-	return sym
+	return input != '.' && !unicode.IsDigit(input)
 }
 
 func FindPartNumbers(grid utils.Grid) []int {
@@ -37,26 +37,20 @@ func FindPartNumbers(grid utils.Grid) []int {
 	for row := grid.MinY; row <= grid.MaxY; row++ {
 		for col := grid.MinX; col <= grid.MaxX; col++ {
 			point := utils.Point{X: col, Y: row}
-			char := grid.Data[point]
 			isSurrounded := false
 
-			if !unicode.IsNumber(char) {
-				continue
-			}
+			if unicode.IsNumber(grid.Data[point]) {
+				neighbors := point.Neighbors8()
 
-			neighbors := point.Neighbors8()
-
-			for _, val := range neighbors {
-				if rn, ok := grid.Data[val]; ok {
-					if IsSymbol(rn) {
-						isSurrounded = true
+				for _, val := range neighbors {
+					if rn, ok := grid.Data[val]; ok {
+						isSurrounded = isSurrounded || IsSymbol(rn)
 					}
 				}
 			}
 
 			if isSurrounded {
-				numberStr := ExtractNumberAt(grid, point)
-				number, _ := strconv.Atoi(numberStr)
+				number := ExtractNumberAt(grid, point)
 
 				partNumbers = append(partNumbers, number)
 
@@ -115,29 +109,26 @@ func PartTwo(input string) int {
 			point := utils.Point{X: col, Y: row}
 			char := grid.Data[point]
 
-			if char != '*' {
-				continue
-			}
+			if char == '*' {
 
-			neighbors := point.Neighbors8()
-			numbers := make(map[int]bool)
+				neighbors := point.Neighbors8()
+				numbers := make(map[int]bool)
 
-			for _, val := range neighbors {
-				if !unicode.IsNumber(grid.Data[val]) {
-					continue
-				}
-				num := ExtractNumberAt(grid, val)
-				number, _ := strconv.Atoi(num)
-				numbers[number] = true
-			}
-
-			if len(numbers) == 2 {
-				ratio := 1
-				for key := range numbers {
-					ratio *= key
+				for _, val := range neighbors {
+					if unicode.IsNumber(grid.Data[val]) {
+						number := ExtractNumberAt(grid, val)
+						numbers[number] = true
+					}
 				}
 
-				sum += ratio
+				if len(numbers) == 2 {
+					ratio := 1
+					for key := range numbers {
+						ratio *= key
+					}
+
+					sum += ratio
+				}
 			}
 
 		}
