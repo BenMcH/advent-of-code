@@ -4,109 +4,67 @@ import (
 	"advent-of-code-2023/utils"
 	"fmt"
 	"strconv"
-	"strings"
 	"testing"
 	"unicode"
 )
 
-func ExtractNumberAt(board [][]rune, x, y int) string {
-	startX := x
-	line := board[y]
+func ExtractNumberAt(grid utils.Grid, point utils.Point) string {
+	point = utils.Point{X: point.X, Y: point.Y}
 
-	for startX > 0 && unicode.IsDigit(line[startX-1]) {
-		startX -= 1
+	for point.X > grid.MinX && unicode.IsDigit(grid.Data[point.Left()]) {
+		point = point.Left()
 	}
 
-	endX := x
+	runes := make([]rune, 0)
+	runes = append(runes, grid.Data[point])
 
-	for endX < len(line)-1 && unicode.IsDigit(line[endX+1]) {
-		endX += 1
+	for unicode.IsDigit(grid.Data[point.Right()]) {
+		point = point.Right()
+		runes = append(runes, grid.Data[point])
 	}
-
-	runes := board[y][startX : endX+1]
 
 	return string(runes)
 }
 
-type Element struct {
-	value    rune
-	row, col int
-}
-
-func SurroundingElements(board [][]rune, col, row int) []Element {
-	arr := make([]Element, 0)
-	up := row > 0
-	down := row < len(board)-1
-	left := col > 0
-	right := col < len(board[row])-1
-	if up {
-		arr = append(arr, Element{board[row-1][col], row - 1, col})
-		if left {
-			arr = append(arr, Element{board[row-1][col-1], row - 1, col - 1})
-		}
-		if right {
-			arr = append(arr, Element{board[row-1][col+1], row - 1, col + 1})
-		}
-	}
-	if left {
-		arr = append(arr, Element{board[row][col-1], row, col - 1})
-	}
-	if right {
-		arr = append(arr, Element{board[row][col+1], row, col + 1})
-	}
-	if down {
-		arr = append(arr, Element{board[row+1][col], row + 1, col})
-		if left {
-			arr = append(arr, Element{board[row+1][col-1], row + 1, col - 1})
-		}
-		if right {
-			arr = append(arr, Element{board[row+1][col+1], row + 1, col + 1})
-		}
-	}
-
-	return arr
-}
-
 func IsSymbol(input rune) bool {
-	sym := input != '.' && !unicode.IsDigit(input) && input != '\n'
+	sym := input != '.' && !unicode.IsDigit(input)
 	return sym
 }
 
-type PartNumber struct {
-	number   int
-	row, col int
-}
+func FindPartNumbers(grid utils.Grid) []int {
+	partNumbers := make([]int, 0)
 
-func FindPartNumbers(board [][]rune) []PartNumber {
-	partNumbers := make([]PartNumber, 0)
-
-	for row := 0; row < len(board); row++ {
-		line := board[row]
-		for col := 0; col < len(line); col++ {
-			char := line[col]
+	for row := grid.MinY; row <= grid.MaxY; row++ {
+		for col := grid.MinX; col <= grid.MaxX; col++ {
+			point := utils.Point{X: col, Y: row}
+			char := grid.Data[point]
 			isSurrounded := false
 
 			if !unicode.IsNumber(char) {
 				continue
 			}
 
-			surrounding := SurroundingElements(board, col, row)
+			neighbors := point.Neighbors8()
 
-			for _, val := range surrounding {
-				if IsSymbol(val.value) {
-					isSurrounded = true
+			for _, val := range neighbors {
+				if rn, ok := grid.Data[val]; ok {
+					if IsSymbol(rn) {
+						isSurrounded = true
+					}
 				}
 			}
 
 			if isSurrounded {
-				numberStr := ExtractNumberAt(board, col, row)
+				numberStr := ExtractNumberAt(grid, point)
 				number, _ := strconv.Atoi(numberStr)
 
-				partNumbers = append(partNumbers, PartNumber{number, row, col})
+				partNumbers = append(partNumbers, number)
 
-				for col < len(line)-1 && unicode.IsDigit(line[col+1]) {
-					col += 1
+				for point.X < grid.MaxX && unicode.IsDigit(grid.Data[point.Right()]) {
+					point = point.Right()
 				}
+
+				col = point.X
 			}
 		}
 	}
@@ -115,22 +73,14 @@ func FindPartNumbers(board [][]rune) []PartNumber {
 }
 
 func PartOne(input string) int {
-	lines := strings.Split(strings.Trim(input, "\n"), "\n")
-	characters := make([][]rune, len(lines))
+	grid := utils.MakeGrid(input)
 
-	for row, line := range lines {
-		characters[row] = make([]rune, len(line))
-		for col, char := range line {
-			characters[row][col] = char
-		}
-	}
-
-	parts := FindPartNumbers(characters)
+	parts := FindPartNumbers(grid)
 
 	sum := 0
 
 	for _, num := range parts {
-		sum += num.number
+		sum += num
 	}
 
 	return sum
@@ -156,33 +106,27 @@ func TestPartOne(t *testing.T) {
 }
 
 func PartTwo(input string) int {
-	lines := strings.Split(strings.Trim(input, "\n"), "\n")
-	characters := make([][]rune, len(lines))
-
-	for row, line := range lines {
-		characters[row] = make([]rune, len(line))
-		for col, char := range line {
-			characters[row][col] = char
-		}
-	}
+	grid := utils.MakeGrid(input)
 
 	sum := 0
 
-	for row, line := range characters {
-		for col, char := range line {
+	for row := grid.MinY; row <= grid.MaxY; row++ {
+		for col := grid.MinX; col <= grid.MaxX; col++ {
+			point := utils.Point{X: col, Y: row}
+			char := grid.Data[point]
+
 			if char != '*' {
 				continue
 			}
 
-			surrounding := SurroundingElements(characters, col, row)
-
+			neighbors := point.Neighbors8()
 			numbers := make(map[int]bool)
 
-			for _, val := range surrounding {
-				if !unicode.IsNumber(val.value) {
+			for _, val := range neighbors {
+				if !unicode.IsNumber(grid.Data[val]) {
 					continue
 				}
-				num := ExtractNumberAt(characters, val.col, val.row)
+				num := ExtractNumberAt(grid, val)
 				number, _ := strconv.Atoi(num)
 				numbers[number] = true
 			}
