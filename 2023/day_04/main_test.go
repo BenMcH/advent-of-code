@@ -4,29 +4,31 @@ import (
 	"advent-of-code-2023/utils"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 )
 
-func parseCard(card string) int {
+type Card struct {
+	winning []string
+	myCard  []string
+}
+
+func NewCard(input string) Card {
 	regex := regexp.MustCompile(`\d+`)
-	sections := strings.Split(card, ":")
+	sections := strings.Split(input, ":")
 	numberSections := strings.Split(sections[1], "|")
 
 	firstNumbers := regex.FindAllString(numberSections[0], -1)
 	secondNumbers := regex.FindAllString(numberSections[1], -1)
+	return Card{firstNumbers, secondNumbers}
+}
 
-	myCard := make(map[string]bool)
-	// secondMap := make(map[string]bool)
-
-	for _, val := range secondNumbers {
-		myCard[val] = true
-	}
-
+func (card Card) Score() int {
 	score := 0
 
-	for _, val := range firstNumbers {
-		if _, ok := myCard[val]; ok {
+	for _, val := range card.myCard {
+		if slices.Contains(card.winning, val) {
 			if score == 0 {
 				score = 1
 			} else {
@@ -38,13 +40,13 @@ func parseCard(card string) int {
 	return score
 }
 
-func parseCards(input string) int {
+func scoreCards(input string) int {
 	input = strings.Trim(input, "\n")
 	cards := strings.Split(input, "\n")
 	sum := 0
 
 	for _, card := range cards {
-		sum = sum + parseCard(card)
+		sum = sum + NewCard(card).Score()
 	}
 	return sum
 }
@@ -58,13 +60,12 @@ Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 `
-	if parseCards(testInput) != 13 {
-		t.Errorf("Expected 13, got: %d", parseCards(testInput))
+	if scoreCards(testInput) != 13 {
+		t.Errorf("Expected 13, got: %d", scoreCards(testInput))
 	}
 
 	input := utils.ReadInput(4)
-
-	fmt.Println(parseCards(input))
+	fmt.Println(scoreCards(input))
 }
 
 func scoreRecursively(cards []string, workingSet []int, cache map[int]int) int {
@@ -73,35 +74,18 @@ func scoreRecursively(cards []string, workingSet []int, cache map[int]int) int {
 	}
 	currentCard := workingSet[0]
 	workingSet = workingSet[1:]
-	card := cards[currentCard]
+	card := NewCard(cards[currentCard])
 
 	if val, ok := cache[currentCard]; ok {
 		return val + scoreRecursively(cards, workingSet, cache)
 	}
+	target := currentCard
 
-	regex := regexp.MustCompile(`\d+`)
-	sections := strings.Split(card, ":")
-	numberSections := strings.Split(sections[1], "|")
-
-	firstNumbers := regex.FindAllString(numberSections[0], -1)
-	secondNumbers := regex.FindAllString(numberSections[1], -1)
-
-	myCard := make(map[string]bool, 0)
-	// secondMap := make(map[string]bool)
-
-	for _, val := range secondNumbers {
-		myCard[val] = true
-	}
-
-	matches := 0
-
-	for _, val := range firstNumbers {
-		if _, ok := myCard[val]; ok {
-			matches = matches + 1
+	for _, val := range card.winning {
+		if slices.Contains(card.myCard, val) {
+			target = target + 1
 		}
 	}
-
-	target := currentCard + 0 + matches
 
 	newCards := make([]int, 0)
 
@@ -116,16 +100,13 @@ func scoreRecursively(cards []string, workingSet []int, cache map[int]int) int {
 
 func PartTwo(input string) int {
 	input = strings.Trim(input, "\n")
-
 	cardStrings := strings.Split(input, "\n")
-
 	scores := make([]int, len(cardStrings))
 
 	for i, card := range cardStrings {
-		scores[i] = parseCard(card)
+		scores[i] = NewCard(card).Score()
 	}
 
-	// recursiveScores := make(map[int]int)
 	indicies := make([]int, 0)
 	for i := range cardStrings {
 		indicies = append(indicies, i)
