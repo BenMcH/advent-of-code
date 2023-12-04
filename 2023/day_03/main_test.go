@@ -3,63 +3,55 @@ package day_03
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
-	"strconv"
 	"testing"
 	"unicode"
 )
 
 func ExtractNumberAt(grid utils.Grid, point utils.Point) int {
-	point = utils.Point{X: point.X, Y: point.Y}
-
 	for point.X > grid.MinX && unicode.IsDigit(grid.Data[point.Left()]) {
 		point = point.Left()
 	}
 
-	runes := []rune{grid.Data[point]}
+	num := int(grid.Data[point] - '0')
 
 	for unicode.IsDigit(grid.Data[point.Right()]) {
 		point = point.Right()
-		runes = append(runes, grid.Data[point])
+		num = num*10 + int(grid.Data[point]-'0')
 	}
 
-	num, _ := strconv.Atoi(string(runes))
-
 	return num
-}
-
-func IsSymbol(input rune) bool {
-	return input != '.' && !unicode.IsDigit(input)
 }
 
 func FindPartNumbers(grid utils.Grid) []int {
 	partNumbers := make([]int, 0)
 
 	for row := grid.MinY; row <= grid.MaxY; row++ {
+		num := 0
+		isSurrounded := false
 		for col := grid.MinX; col <= grid.MaxX; col++ {
 			point := utils.Point{X: col, Y: row}
-			isSurrounded := false
 
 			if unicode.IsNumber(grid.Data[point]) {
+				num = num*10 + int(grid.Data[point]-'0')
 				neighbors := point.Neighbors8()
 
 				for _, val := range neighbors {
 					if rn, ok := grid.Data[val]; ok {
-						isSurrounded = isSurrounded || IsSymbol(rn)
+						isSurrounded = isSurrounded || (rn != '.' && !unicode.IsDigit(rn))
 					}
 				}
-			}
-
-			if isSurrounded {
-				number := ExtractNumberAt(grid, point)
-
-				partNumbers = append(partNumbers, number)
-
-				for point.X < grid.MaxX && unicode.IsDigit(grid.Data[point.Right()]) {
-					point = point.Right()
+			} else {
+				if num > 0 && isSurrounded {
+					partNumbers = append(partNumbers, num)
 				}
 
-				col = point.X
+				num = 0
+				isSurrounded = false
 			}
+		}
+
+		if isSurrounded {
+			partNumbers = append(partNumbers, num)
 		}
 	}
 
@@ -68,9 +60,7 @@ func FindPartNumbers(grid utils.Grid) []int {
 
 func PartOne(input string) int {
 	grid := utils.MakeGrid(input)
-
 	parts := FindPartNumbers(grid)
-
 	sum := 0
 
 	for _, num := range parts {
@@ -101,23 +91,18 @@ func TestPartOne(t *testing.T) {
 
 func PartTwo(input string) int {
 	grid := utils.MakeGrid(input)
-
 	sum := 0
 
 	for row := grid.MinY; row <= grid.MaxY; row++ {
 		for col := grid.MinX; col <= grid.MaxX; col++ {
 			point := utils.Point{X: col, Y: row}
-			char := grid.Data[point]
 
-			if char == '*' {
-
-				neighbors := point.Neighbors8()
+			if grid.Data[point] == '*' {
 				numbers := make(map[int]bool)
 
-				for _, val := range neighbors {
+				for _, val := range point.Neighbors8() {
 					if unicode.IsNumber(grid.Data[val]) {
-						number := ExtractNumberAt(grid, val)
-						numbers[number] = true
+						numbers[ExtractNumberAt(grid, val)] = true
 					}
 				}
 
