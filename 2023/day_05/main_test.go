@@ -1,4 +1,4 @@
-package day04
+package day05
 
 import (
 	"advent-of-code-2023/utils"
@@ -71,6 +71,27 @@ func TestPartOne(t *testing.T) {
 
 		if loc < least {
 			least = loc
+		}
+	}
+
+	fmt.Println(least)
+}
+
+func TestTwo(t *testing.T) {
+	input := utils.ReadInput(5)
+	almanac := parseAlmanac(input)
+
+	least := 999999999
+
+	for i := 0; i < len(almanac.seeds); i = i + 2 {
+		start, l := almanac.seeds[i], almanac.seeds[i+1]
+		target := start + l
+		for seed := start; seed <= target; seed++ {
+			loc := almanac.SeedToLocation(seed)
+
+			if loc < least {
+				least = loc
+			}
 		}
 	}
 
