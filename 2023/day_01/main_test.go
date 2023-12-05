@@ -11,7 +11,6 @@ import (
 
 func ExtractNumbers(input string) int {
 	regex := regexp.MustCompile(`\d`)
-
 	matches := regex.FindAllString(input, -1)
 
 	firstNum := matches[0]
@@ -23,9 +22,7 @@ func ExtractNumbers(input string) int {
 }
 
 func TestPartOne(t *testing.T) {
-	input := utils.ReadInput(1)
-
-	lines := strings.Split(input, "\n")
+	lines := utils.Lines(utils.ReadInput(1))
 
 	sum := 0
 	for _, str := range lines {
@@ -46,11 +43,10 @@ func TestAdvancedNumbers(t *testing.T) {
 	input = strings.ReplaceAll(input, "six", "6")
 	input = strings.ReplaceAll(input, "seven", "7")
 	input = strings.ReplaceAll(input, "nine", "9")
-	lines := strings.Split(input, "\n")
-	sum := 0
-	for _, str := range lines {
-		sum += ExtractNumbers(str)
-	}
+	lines := utils.Lines(input)
+	arr := utils.Map(lines, func(str string) int {
+		return ExtractNumbers(str)
+	})
 
-	fmt.Println(sum)
+	fmt.Println(utils.SumIntArr(arr))
 }

@@ -44,8 +44,7 @@ func (g Game) Power() int {
 }
 
 func TestPartOne(t *testing.T) {
-	input := utils.ReadInput(2)
-	games := strings.Split(input, "\n")
+	games := utils.Lines(utils.ReadInput(2))
 
 	sum := 0
 	for _, game := range games {
@@ -60,13 +59,11 @@ func TestPartOne(t *testing.T) {
 }
 
 func TestPartTwo(t *testing.T) {
-	input := utils.ReadInput(2)
-	games := strings.Split(input, "\n")
+	games := utils.Lines(utils.ReadInput(2))
 
 	sum := 0
 	for _, game := range games {
-		game := ParseGame(game)
-		sum += game.Power()
+		sum += ParseGame(game).Power()
 	}
 
 	fmt.Println(sum)

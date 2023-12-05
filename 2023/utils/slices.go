@@ -1,6 +1,9 @@
 package utils
 
-import "strconv"
+import (
+	"regexp"
+	"strconv"
+)
 
 func StringsToInts(arr []string) ([]int, error) {
 	ints := []int{}
@@ -42,4 +45,47 @@ func Transpose[V comparable](arr [][]V) [][]V {
 	}
 
 	return newArr
+}
+
+func NumbersFromString(input string) []int {
+	regex := regexp.MustCompile(`\d+`)
+
+	strs := regex.FindAllString(input, -1)
+	arr := make([]int, len(strs))
+
+	for i, val := range strs {
+		arr[i], _ = strconv.Atoi(val)
+	}
+
+	return arr
+}
+
+func SumIntArr(arr []int) (sum int) {
+	for _, val := range arr {
+		sum = sum + val
+	}
+
+	return
+}
+
+func Map[K comparable, V comparable](inputArr []K, f func(K) V) []V {
+	arr := make([]V, len(inputArr))
+
+	for i, item := range inputArr {
+		arr[i] = f(item)
+	}
+
+	return arr
+}
+
+func Filter[V comparable](inputArr []V, f func(V) bool) []V {
+	arr := make([]V, 0)
+
+	for _, item := range inputArr {
+		if f(item) {
+			arr = append(arr, item)
+		}
+	}
+
+	return arr
 }

@@ -3,24 +3,22 @@ package day04
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
-	"regexp"
 	"slices"
 	"strings"
 	"testing"
 )
 
 type Card struct {
-	winning []string
-	myCard  []string
+	winning []int
+	myCard  []int
 }
 
 func NewCard(input string) Card {
-	regex := regexp.MustCompile(`\d+`)
 	sections := strings.Split(input, ":")
 	numberSections := strings.Split(sections[1], "|")
 
-	firstNumbers := regex.FindAllString(numberSections[0], -1)
-	secondNumbers := regex.FindAllString(numberSections[1], -1)
+	firstNumbers := utils.NumbersFromString(numberSections[0])
+	secondNumbers := utils.NumbersFromString(numberSections[1])
 	return Card{firstNumbers, secondNumbers}
 }
 
@@ -41,14 +39,51 @@ func (card Card) Score() int {
 }
 
 func scoreCards(input string) int {
-	input = strings.Trim(input, "\n")
-	cards := strings.Split(input, "\n")
-	sum := 0
+	cards := utils.Lines(input)
+	sum := utils.SumIntArr(utils.Map(cards, func(c string) int {
+		return NewCard(c).Score()
+	}))
 
-	for _, card := range cards {
-		sum = sum + NewCard(card).Score()
-	}
 	return sum
+}
+
+func scoreRecursively(cards []string, workingSet []int, cache map[int]int) int {
+	if len(workingSet) == 0 {
+		return 0
+	}
+	currentCard := workingSet[0]
+	workingSet = workingSet[1:]
+	card := NewCard(cards[currentCard])
+
+	if val, ok := cache[currentCard]; ok {
+		return val + scoreRecursively(cards, workingSet, cache)
+	}
+	target := currentCard
+
+	newCards := make([]int, 0)
+	for _, val := range card.winning {
+		if slices.Contains(card.myCard, val) {
+			target = target + 1
+			newCards = append(newCards, target)
+		}
+	}
+
+	cache[currentCard] = 1 + scoreRecursively(cards, newCards, cache)
+
+	return cache[currentCard] + scoreRecursively(cards, workingSet, cache)
+}
+
+func PartTwo(input string) int {
+	cardStrings := utils.Lines(input)
+	scores := make([]int, len(cardStrings))
+	indicies := make([]int, len(cardStrings))
+
+	for i, card := range cardStrings {
+		scores[i] = NewCard(card).Score()
+		indicies[i] = i
+	}
+
+	return scoreRecursively(cardStrings, indicies, make(map[int]int))
 }
 
 func TestPartOne(t *testing.T) {
@@ -66,53 +101,6 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 
 	input := utils.ReadInput(4)
 	fmt.Println(scoreCards(input))
-}
-
-func scoreRecursively(cards []string, workingSet []int, cache map[int]int) int {
-	if len(workingSet) == 0 {
-		return 0
-	}
-	currentCard := workingSet[0]
-	workingSet = workingSet[1:]
-	card := NewCard(cards[currentCard])
-
-	if val, ok := cache[currentCard]; ok {
-		return val + scoreRecursively(cards, workingSet, cache)
-	}
-	target := currentCard
-
-	for _, val := range card.winning {
-		if slices.Contains(card.myCard, val) {
-			target = target + 1
-		}
-	}
-
-	newCards := make([]int, 0)
-
-	for i := currentCard + 1; i <= target; i++ {
-		newCards = append(newCards, i)
-	}
-
-	cache[currentCard] = 1 + scoreRecursively(cards, newCards, cache)
-
-	return cache[currentCard] + scoreRecursively(cards, workingSet, cache)
-}
-
-func PartTwo(input string) int {
-	input = strings.Trim(input, "\n")
-	cardStrings := strings.Split(input, "\n")
-	scores := make([]int, len(cardStrings))
-
-	for i, card := range cardStrings {
-		scores[i] = NewCard(card).Score()
-	}
-
-	indicies := make([]int, 0)
-	for i := range cardStrings {
-		indicies = append(indicies, i)
-	}
-
-	return scoreRecursively(cardStrings, indicies, make(map[int]int))
 }
 
 func TestPartTwo(t *testing.T) {
