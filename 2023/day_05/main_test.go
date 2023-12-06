@@ -47,6 +47,19 @@ func getDestination(mappings []int, val int) int {
 	return val
 }
 
+func getSource(mappings []int, val int) int {
+	for i := 0; i < len(mappings); i = i + 3 {
+		dest, source, len := mappings[i], mappings[i+1], mappings[i+2]
+
+		if val >= dest && val <= dest+len-1 {
+			diff := val - dest
+			return source + diff
+		}
+	}
+
+	return val
+}
+
 func (a Almanac) SeedToLocation(seed int) int {
 	soil := getDestination(a.seedsToSoil, seed)
 	fertilizer := getDestination(a.soilToFertilizer, soil)
@@ -57,6 +70,18 @@ func (a Almanac) SeedToLocation(seed int) int {
 	location := getDestination(a.humidityToLocation, humidity)
 
 	return location
+}
+
+func (a Almanac) LocationToSeed(location int) int {
+	humidity := getSource(a.humidityToLocation, location)
+	temperature := getSource(a.temperatureToHumidity, humidity)
+	light := getSource(a.lightToTemperature, temperature)
+	water := getSource(a.waterToLight, light)
+	fertilizer := getSource(a.fertilizerToWater, water)
+	soil := getSource(a.soilToFertilizer, fertilizer)
+	seed := getSource(a.seedsToSoil, soil)
+
+	return seed
 }
 
 func TestPartOne(t *testing.T) {
@@ -77,23 +102,31 @@ func TestPartOne(t *testing.T) {
 	fmt.Println(least)
 }
 
+func rangeContains(rng []int, val int) bool {
+	for i := 0; i < len(rng); i = i + 2 {
+		start, l := rng[i], rng[i+1]
+		end := start + l
+
+		if start <= val && end >= val {
+			return true
+		}
+	}
+	return false
+}
+
 func TestTwo(t *testing.T) {
 	input := utils.ReadInput(5)
 	almanac := parseAlmanac(input)
 
-	least := 999999999
+	loc := 1
 
-	for i := 0; i < len(almanac.seeds); i = i + 2 {
-		start, l := almanac.seeds[i], almanac.seeds[i+1]
-		target := start + l
-		for seed := start; seed <= target; seed++ {
-			loc := almanac.SeedToLocation(seed)
+	for {
+		seed := almanac.LocationToSeed(loc)
 
-			if loc < least {
-				least = loc
-			}
+		if rangeContains(almanac.seeds, seed) {
+			fmt.Println(loc)
+			return
 		}
+		loc++
 	}
-
-	fmt.Println(least)
 }
