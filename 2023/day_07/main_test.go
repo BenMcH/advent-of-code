@@ -85,7 +85,7 @@ func scoreHandType(input []rune, partTwo bool) int {
 			}
 		}
 
-		if len(candidates) == 0 {
+		if len(candidates) == 0 { // JJJJJ
 			return scoreHandType(input, false)
 		}
 
@@ -99,9 +99,6 @@ func scoreHandType(input []rune, partTwo bool) int {
 			num := scoreHandType(nCards, partTwo)
 			if num > max {
 				max = num
-			}
-			if max == fiveOfAKind {
-				return max
 			}
 		}
 		return max
@@ -149,22 +146,7 @@ func scoreHandMap(cards map[rune]int) int {
 
 func scoreCardType(card rune, partTwo bool) int {
 	cardPoints := make(map[rune]int)
-	cards := []rune{
-		'2',
-		'3',
-		'4',
-		'5',
-		'6',
-		'7',
-		'8',
-		'9',
-		'T',
-		'J',
-		'Q',
-		'K',
-		'A',
-	}
-
+	cards := []rune{'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'}
 	for i, card := range cards {
 		cardPoints[card] = i
 	}
@@ -196,16 +178,16 @@ AAAAA 61
 2JJJJ 53
 JJJJ2 41`
 
-func PartOne(input string) int {
+func ProcessHands(input string, partTwo bool) int {
 	handStrs := utils.Lines(input)
 
 	hands := make([]player, len(handStrs))
 	for i, str := range handStrs {
-		hands[i] = NewPlayer(str, false)
+		hands[i] = NewPlayer(str, partTwo)
 	}
 
 	slices.SortFunc(hands, func(a, b player) int {
-		winner := a.determineWinner(b, false)
+		winner := a.determineWinner(b, partTwo)
 
 		if b.equals(winner) {
 			return -1
@@ -224,44 +206,17 @@ func PartOne(input string) int {
 }
 
 func TestPartOne(t *testing.T) {
-	if PartOne(TEST_INPUT) != 6592 {
-		t.Error("Wrong", PartOne(TEST_INPUT))
+	if ProcessHands(TEST_INPUT, false) != 6592 {
+		t.Error("Wrong", ProcessHands(TEST_INPUT, false))
 	} else {
-		fmt.Println(PartOne(utils.ReadInput(7)))
+		fmt.Println(ProcessHands(utils.ReadInput(7), false))
 	}
-}
-
-func PartTwo(input string) int {
-	handStrs := utils.Lines(input)
-
-	hands := make([]player, len(handStrs))
-	for i, str := range handStrs {
-		hands[i] = NewPlayer(str, true)
-	}
-
-	slices.SortFunc(hands, func(a, b player) int {
-		winner := a.determineWinner(b, true)
-
-		if b.equals(winner) {
-			return -1
-		} else {
-			return 1
-		}
-	})
-
-	totalWinnings := 0
-
-	for i, player := range hands {
-		totalWinnings = totalWinnings + (1+i)*player.bid
-	}
-
-	return totalWinnings
 }
 
 func TestPartTwo(t *testing.T) {
-	if PartTwo(TEST_INPUT) != 6839 {
-		t.Error("Wrong", PartTwo(TEST_INPUT))
+	if ProcessHands(TEST_INPUT, true) != 6839 {
+		t.Error("Wrong", ProcessHands(TEST_INPUT, true))
 	} else {
-		fmt.Println(PartTwo(utils.ReadInput(7)))
+		fmt.Println(ProcessHands(utils.ReadInput(7), true))
 	}
 }
