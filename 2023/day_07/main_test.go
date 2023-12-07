@@ -19,7 +19,7 @@ func (p player) equals(p2 player) bool {
 	return p.handTypeScore == p2.handTypeScore && p.bid == p2.bid
 }
 
-func NewPlayer(input string) player {
+func NewPlayer(input string, partTwo bool) player {
 	sections := strings.Split(input, " ")
 	bid, _ := strconv.Atoi(sections[1])
 	hand := []rune(sections[0])
@@ -27,26 +27,26 @@ func NewPlayer(input string) player {
 	return player{
 		hand,
 		bid,
-		scoreHandType(hand),
+		scoreHandType(hand, partTwo),
 	}
 }
 
-func (p player) determineWinner(opponent player) player {
+func (p player) determineWinner(opponent player, partTwo bool) player {
 	if p.handTypeScore > opponent.handTypeScore {
 		return p
 	} else if opponent.handTypeScore > p.handTypeScore {
 		return opponent
 	}
 
-	return determineWinnerHighCard(p, opponent)
+	return determineWinnerHighCard(p, opponent, partTwo)
 }
 
-func determineWinnerHighCard(p1, p2 player) player {
+func determineWinnerHighCard(p1, p2 player, partTwo bool) player {
 	for i, card := range p1.hand {
 		p2Card := p2.hand[i]
 
-		p1Score := scoreCardType(card)
-		p2Score := scoreCardType(p2Card)
+		p1Score := scoreCardType(card, partTwo)
+		p2Score := scoreCardType(p2Card, partTwo)
 
 		if p1Score > p2Score {
 			return p1
@@ -69,14 +69,49 @@ const (
 	fiveOfAKind  = iota
 )
 
-func scoreHandType(input []rune) int {
+func scoreHandType(input []rune, partTwo bool) int {
 	cards := make(map[rune]int)
-	vals := make([]int, 0)
-
 	for _, r := range input {
 		cards[r]++
 	}
 
+	_, hasJoker := cards['J']
+
+	if hasJoker && partTwo {
+		candidates := make([]rune, 0)
+		for key := range cards {
+			if key != 'J' {
+				candidates = append(candidates, key)
+			}
+		}
+
+		if len(candidates) == 0 {
+			return scoreHandType(input, false)
+		}
+
+		max := 0
+		for _, c := range candidates {
+			nCards := make([]rune, len(input))
+			copy(nCards, input)
+
+			i := slices.Index(nCards, 'J')
+			nCards[i] = c
+			num := scoreHandType(nCards, partTwo)
+			if num > max {
+				max = num
+			}
+			if max == fiveOfAKind {
+				return max
+			}
+		}
+		return max
+	}
+
+	return scoreHandMap(cards)
+}
+
+func scoreHandMap(cards map[rune]int) int {
+	vals := make([]int, 0)
 	for _, val := range cards {
 		vals = append(vals, val)
 	}
@@ -85,9 +120,6 @@ func scoreHandType(input []rune) int {
 		return fiveOfAKind
 	}
 
-	if slices.Contains(vals, 4) {
-		return fourOfAKind
-	}
 	if slices.Contains(vals, 4) {
 		return fourOfAKind
 	}
@@ -115,8 +147,9 @@ func scoreHandType(input []rune) int {
 	return highCard
 }
 
-func scoreCardType(card rune) int {
-	cardPoints := []rune{
+func scoreCardType(card rune, partTwo bool) int {
+	cardPoints := make(map[rune]int)
+	cards := []rune{
 		'2',
 		'3',
 		'4',
@@ -132,8 +165,15 @@ func scoreCardType(card rune) int {
 		'A',
 	}
 
-	return slices.Index(cardPoints, card)
+	for i, card := range cards {
+		cardPoints[card] = i
+	}
 
+	if partTwo {
+		cardPoints['J'] = -1
+	}
+
+	return cardPoints[card]
 }
 
 const TEST_INPUT = `2345A 1
@@ -161,11 +201,11 @@ func PartOne(input string) int {
 
 	hands := make([]player, len(handStrs))
 	for i, str := range handStrs {
-		hands[i] = NewPlayer(str)
+		hands[i] = NewPlayer(str, false)
 	}
 
 	slices.SortFunc(hands, func(a, b player) int {
-		winner := a.determineWinner(b)
+		winner := a.determineWinner(b, false)
 
 		if b.equals(winner) {
 			return -1
@@ -188,5 +228,40 @@ func TestPartOne(t *testing.T) {
 		t.Error("Wrong", PartOne(TEST_INPUT))
 	} else {
 		fmt.Println(PartOne(utils.ReadInput(7)))
+	}
+}
+
+func PartTwo(input string) int {
+	handStrs := utils.Lines(input)
+
+	hands := make([]player, len(handStrs))
+	for i, str := range handStrs {
+		hands[i] = NewPlayer(str, true)
+	}
+
+	slices.SortFunc(hands, func(a, b player) int {
+		winner := a.determineWinner(b, true)
+
+		if b.equals(winner) {
+			return -1
+		} else {
+			return 1
+		}
+	})
+
+	totalWinnings := 0
+
+	for i, player := range hands {
+		totalWinnings = totalWinnings + (1+i)*player.bid
+	}
+
+	return totalWinnings
+}
+
+func TestPartTwo(t *testing.T) {
+	if PartTwo(TEST_INPUT) != 6839 {
+		t.Error("Wrong", PartTwo(TEST_INPUT))
+	} else {
+		fmt.Println(PartTwo(utils.ReadInput(7)))
 	}
 }
