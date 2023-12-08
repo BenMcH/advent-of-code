@@ -73,3 +73,83 @@ ZZZ = (ZZZ, ZZZ)
 		fmt.Println(partOne(utils.ReadInput(8)))
 	}
 }
+
+func partTwo(input string) int {
+	sections := strings.Split(input, "\n\n")
+	steps := []rune(strings.Trim(sections[0], "\n"))
+
+	lines := utils.Lines(sections[1])
+
+	instructions := utils.Map(lines, func(line string) Instruction {
+		return parseInstruction(line)
+	})
+
+	instMap := make(map[string]Instruction)
+	locations := make([]Instruction, 0)
+
+	for _, instruction := range instructions {
+		instMap[instruction.loc] = instruction
+
+		if strings.HasSuffix(instruction.loc, "A") {
+			locations = append(locations, instruction)
+		}
+	}
+
+	cycles := utils.Map(locations, func(location Instruction) int {
+		step := 0
+
+		for !strings.HasSuffix(location.loc, "Z") {
+			currStep := steps[step%len(steps)]
+
+			// locations = utils.Map(locations, func(curLoc Instruction) Instruction {
+			if currStep == 'R' {
+				location = instMap[location.right]
+			} else {
+				location = instMap[location.left]
+			}
+			step++
+		}
+
+		return step
+	})
+
+	for len(cycles) > 1 {
+		a, b := cycles[0], cycles[1]
+		cycles = cycles[1:]
+
+		cycles[0] = lcm(a, b)
+	}
+
+	return cycles[0]
+}
+
+func gcd(m, n int) int {
+	if n == 0 {
+		return m
+	} else {
+		return gcd(n, m%n)
+	}
+}
+
+func lcm(m, n int) int {
+	return m * n / gcd(m, n)
+}
+
+func TestPartTwo(t *testing.T) {
+	testInput := `LR
+
+FFA = (FFB, XXX)
+FFB = (XXX, FFZ)
+FFZ = (FFB, XXX)
+GGA = (GGB, XXX)
+GGB = (GGC, GGC)
+GGC = (GGZ, GGZ)
+GGZ = (GGB, GGB)
+XXX = (XXX, XXX)
+`
+	if partTwo(testInput) != 6 {
+		t.Error("Wrong", partTwo(testInput))
+	} else {
+		fmt.Println(partTwo(utils.ReadInput(8)))
+	}
+}
