@@ -101,7 +101,6 @@ func partTwo(input string) int {
 		for !strings.HasSuffix(location.loc, "Z") {
 			currStep := steps[step%len(steps)]
 
-			// locations = utils.Map(locations, func(curLoc Instruction) Instruction {
 			if currStep == 'R' {
 				location = instMap[location.right]
 			} else {
@@ -113,26 +112,11 @@ func partTwo(input string) int {
 		return step
 	})
 
-	for len(cycles) > 1 {
-		a, b := cycles[0], cycles[1]
-		cycles = cycles[1:]
+	ans := utils.Reduce(cycles, 1, func(g, nextVal int) int {
+		return utils.LCM(g, nextVal)
+	})
 
-		cycles[0] = lcm(a, b)
-	}
-
-	return cycles[0]
-}
-
-func gcd(m, n int) int {
-	if n == 0 {
-		return m
-	} else {
-		return gcd(n, m%n)
-	}
-}
-
-func lcm(m, n int) int {
-	return m * n / gcd(m, n)
+	return ans
 }
 
 func TestPartTwo(t *testing.T) {

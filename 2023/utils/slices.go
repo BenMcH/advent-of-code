@@ -68,7 +68,7 @@ func SumIntArr(arr []int) (sum int) {
 	return
 }
 
-func Map[K comparable, V comparable](inputArr []K, f func(K) V) []V {
+func Map[K any, V any](inputArr []K, f func(K) V) []V {
 	arr := make([]V, len(inputArr))
 
 	for i, item := range inputArr {
@@ -78,7 +78,7 @@ func Map[K comparable, V comparable](inputArr []K, f func(K) V) []V {
 	return arr
 }
 
-func Filter[V comparable](inputArr []V, f func(V) bool) []V {
+func Filter[V any](inputArr []V, f func(V) bool) []V {
 	arr := make([]V, 0)
 
 	for _, item := range inputArr {
@@ -88,4 +88,33 @@ func Filter[V comparable](inputArr []V, f func(V) bool) []V {
 	}
 
 	return arr
+}
+
+func Reduce[K any, V any](inputArr []K, initialValue V, f func(V, K) V) V {
+	val := initialValue
+	for _, item := range inputArr {
+		val = f(val, item)
+	}
+
+	return val
+}
+
+func All[K any](inputArr []K, f func(K) bool) bool {
+	for _, item := range inputArr {
+		if !f(item) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func Any[K any](inputArr []K, f func(K) bool) bool {
+	for _, item := range inputArr {
+		if f(item) {
+			return true
+		}
+	}
+
+	return false
 }
