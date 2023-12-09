@@ -128,12 +128,7 @@ func scoreHandMap(cards map[rune]int) int {
 	}
 
 	if slices.Contains(vals, 2) {
-		count := 0
-		for _, val := range vals {
-			if val == 2 {
-				count++
-			}
-		}
+		count := utils.Count(vals, func(i int) bool { return i == 2 })
 		if count == 2 {
 			return twoPair
 		}
@@ -181,10 +176,7 @@ JJJJ2 41`
 func ProcessHands(input string, partTwo bool) int {
 	handStrs := utils.Lines(input)
 
-	hands := make([]player, len(handStrs))
-	for i, str := range handStrs {
-		hands[i] = NewPlayer(str, partTwo)
-	}
+	hands := utils.Map(handStrs, func(str string) player { return NewPlayer(str, partTwo) })
 
 	slices.SortFunc(hands, func(a, b player) int {
 		winner := a.determineWinner(b, partTwo)

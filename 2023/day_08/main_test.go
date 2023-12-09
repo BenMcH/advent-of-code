@@ -18,10 +18,6 @@ func parseInstruction(input string) Instruction {
 	locRegex := regexp.MustCompile(`\w+`)
 	locs := locRegex.FindAllString(input, -1)
 
-	if len(locs) != 3 {
-		panic("Wrong number of locations")
-	}
-
 	return Instruction{locs[0], locs[1], locs[2]}
 }
 
@@ -35,11 +31,9 @@ func partOne(input string) int {
 		return parseInstruction(line)
 	})
 
-	instMap := make(map[string]Instruction)
-
-	for _, instruction := range instructions {
-		instMap[instruction.loc] = instruction
-	}
+	instMap := utils.SliceToMap(instructions, func(i Instruction) string {
+		return i.loc
+	})
 
 	step := 0
 	loc := instMap["AAA"]
@@ -84,16 +78,13 @@ func partTwo(input string) int {
 		return parseInstruction(line)
 	})
 
-	instMap := make(map[string]Instruction)
 	locations := make([]Instruction, 0)
-
-	for _, instruction := range instructions {
-		instMap[instruction.loc] = instruction
-
-		if strings.HasSuffix(instruction.loc, "A") {
-			locations = append(locations, instruction)
+	instMap := utils.SliceToMap(instructions, func(i Instruction) string {
+		if strings.HasSuffix(i.loc, "A") {
+			locations = append(locations, i)
 		}
-	}
+		return i.loc
+	})
 
 	cycles := utils.Map(locations, func(location Instruction) int {
 		step := 0

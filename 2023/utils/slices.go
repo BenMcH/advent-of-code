@@ -118,3 +118,14 @@ func Any[K any](inputArr []K, f func(K) bool) bool {
 
 	return false
 }
+
+func Count[K any](inputArr []K, f func(K) bool) int {
+	count := 0
+	for _, item := range inputArr {
+		if f(item) {
+			count++
+		}
+	}
+
+	return count
+}
