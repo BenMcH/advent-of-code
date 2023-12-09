@@ -48,7 +48,7 @@ func Transpose[V comparable](arr [][]V) [][]V {
 }
 
 func NumbersFromString(input string) []int {
-	regex := regexp.MustCompile(`\d+`)
+	regex := regexp.MustCompile(`-?\d+`)
 
 	strs := regex.FindAllString(input, -1)
 	arr := make([]int, len(strs))
