@@ -27,7 +27,7 @@ func partOne(input string) int {
 
 	lines := utils.Lines(sections[1])
 
-	instructions := utils.Map(lines, func(line string) Instruction {
+	instructions := utils.Map(lines, func(line string, _ int) Instruction {
 		return parseInstruction(line)
 	})
 
@@ -74,7 +74,7 @@ func partTwo(input string) int {
 
 	lines := utils.Lines(sections[1])
 
-	instructions := utils.Map(lines, func(line string) Instruction {
+	instructions := utils.Map(lines, func(line string, _ int) Instruction {
 		return parseInstruction(line)
 	})
 
@@ -86,7 +86,7 @@ func partTwo(input string) int {
 		return i.loc
 	})
 
-	cycles := utils.Map(locations, func(location Instruction) int {
+	cycles := utils.Map(locations, func(location Instruction, _ int) int {
 		step := 0
 
 		for !strings.HasSuffix(location.loc, "Z") {

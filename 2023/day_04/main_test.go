@@ -23,24 +23,15 @@ func NewCard(input string) Card {
 }
 
 func (card Card) Score() int {
-	score := 0
-
-	for _, val := range card.myCard {
-		if slices.Contains(card.winning, val) {
-			if score == 0 {
-				score = 1
-			} else {
-				score = score * 2
-			}
-		}
-	}
+	cards := utils.Filter(card.myCard, func(val, _ int) bool { return slices.Contains(card.winning, val) })
+	score := utils.IntPow(2, len(cards)-1)
 
 	return score
 }
 
 func scoreCards(input string) int {
 	cards := utils.Lines(input)
-	sum := utils.SumIntArr(utils.Map(cards, func(c string) int {
+	sum := utils.SumIntArr(utils.Map(cards, func(c string, _ int) int {
 		return NewCard(c).Score()
 	}))
 

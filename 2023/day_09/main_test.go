@@ -61,7 +61,7 @@ func TestWeather(t *testing.T) {
 func partOne(input string) int {
 	lines := utils.Lines(input)
 
-	predictions := utils.Map(lines, func(input string) int { return parseWeather(input).predict() })
+	predictions := utils.Map(lines, func(input string, _ int) int { return parseWeather(input).predict() })
 
 	return utils.SumIntArr(predictions)
 }
@@ -81,7 +81,7 @@ func TestPartOne(t *testing.T) {
 func partTwo(input string) int {
 	lines := utils.Lines(input)
 
-	predictions := utils.Map(lines, func(input string) int { return parseWeather(input).predictHistorical() })
+	predictions := utils.Map(lines, func(input string, _ int) int { return parseWeather(input).predictHistorical() })
 
 	return utils.SumIntArr(predictions)
 }

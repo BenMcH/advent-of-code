@@ -44,7 +44,7 @@ func TestAdvancedNumbers(t *testing.T) {
 	input = strings.ReplaceAll(input, "seven", "7")
 	input = strings.ReplaceAll(input, "nine", "9")
 	lines := utils.Lines(input)
-	arr := utils.Map(lines, func(str string) int {
+	arr := utils.Map(lines, func(str string, _ int) int {
 		return ExtractNumbers(str)
 	})
 

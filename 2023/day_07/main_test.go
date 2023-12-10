@@ -176,7 +176,7 @@ JJJJ2 41`
 func ProcessHands(input string, partTwo bool) int {
 	handStrs := utils.Lines(input)
 
-	hands := utils.Map(handStrs, func(str string) player { return NewPlayer(str, partTwo) })
+	hands := utils.Map(handStrs, func(str string, _ int) player { return NewPlayer(str, partTwo) })
 
 	slices.SortFunc(hands, func(a, b player) int {
 		winner := a.determineWinner(b, partTwo)

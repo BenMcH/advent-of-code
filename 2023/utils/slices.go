@@ -68,21 +68,21 @@ func SumIntArr(arr []int) (sum int) {
 	return
 }
 
-func Map[K any, V any](inputArr []K, f func(K) V) []V {
+func Map[K any, V any](inputArr []K, f func(K, int) V) []V {
 	arr := make([]V, len(inputArr))
 
 	for i, item := range inputArr {
-		arr[i] = f(item)
+		arr[i] = f(item, i)
 	}
 
 	return arr
 }
 
-func Filter[V any](inputArr []V, f func(V) bool) []V {
+func Filter[V any](inputArr []V, f func(V, int) bool) []V {
 	arr := make([]V, 0)
 
-	for _, item := range inputArr {
-		if f(item) {
+	for i, item := range inputArr {
+		if f(item, i) {
 			arr = append(arr, item)
 		}
 	}
