@@ -65,7 +65,7 @@ func testLoop(grid utils.Grid, points []utils.Point) (bool, []utils.Point) {
 	return false, make([]utils.Point, 0)
 }
 
-func partOne(input string) int {
+func partOne(input string) (int, []utils.Point) {
 	grid := utils.MakeGrid(input)
 
 	sLoc := utils.Point{}
@@ -85,9 +85,44 @@ func partOne(input string) int {
 		}
 	}
 
-	return len(loop) / 2
+	return len(loop) / 2, loop
 }
 
 func TestPartOne(t *testing.T) {
-	fmt.Println(partOne(utils.ReadInput(10)))
+	input := utils.ReadInput(10)
+	dist, loop := partOne(input)
+	fmt.Println(dist)
+	grid := utils.MakeGrid(input)
+
+	for y := grid.MinY; y <= grid.MaxY; y++ {
+		for x := grid.MinX; x <= grid.MaxX; x++ {
+			loc := utils.Point{X: x, Y: y}
+			if !slices.Contains(loop, loc) {
+				grid.Data[loc] = '.'
+			}
+		}
+	}
+
+	count := 0
+	for y := grid.MinY; y <= grid.MaxY; y++ {
+		inside := false
+		openingCorner := ' '
+		for x := grid.MinX; x <= grid.MaxX; x++ {
+			loc := utils.Point{X: x, Y: y}
+			cell := grid.Data[loc]
+			if cell == '|' {
+				inside = !inside
+			} else if strings.ContainsRune("LF", cell) {
+				openingCorner = cell
+			} else if strings.ContainsRune("7J", cell) {
+				if (openingCorner == 'L' && cell == '7') || (openingCorner == 'F' && cell == 'J') {
+					inside = !inside
+				}
+			} else if inside && cell == '.' {
+				count++
+			}
+		}
+	}
+
+	fmt.Println(count)
 }

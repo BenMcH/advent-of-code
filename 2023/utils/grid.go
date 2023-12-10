@@ -1,6 +1,9 @@
 package utils
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Point struct {
 	X, Y int
@@ -34,10 +37,10 @@ func MakeGrid(input string) (grid Grid) {
 	lines := strings.Split(input, "\n")
 
 	grid.MinX = 0
-	grid.MaxX = len(lines) - 1
+	grid.MaxX = len(lines[0]) - 1
 
 	grid.MinY = 0
-	grid.MaxY = len(lines[0]) - 1
+	grid.MaxY = len(lines) - 1
 
 	for y, line := range lines {
 		for x, rn := range line {
@@ -46,6 +49,16 @@ func MakeGrid(input string) (grid Grid) {
 	}
 
 	return
+}
+
+func (grid Grid) Print() {
+	for y := grid.MinY; y <= grid.MaxY; y++ {
+		for x := grid.MinX; x <= grid.MaxX; x++ {
+			loc := Point{X: x, Y: y}
+			fmt.Print(string(grid.Data[loc]))
+		}
+		fmt.Println()
+	}
 }
 
 func (p Point) Neighbors4() []Point {
