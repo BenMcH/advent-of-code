@@ -25,6 +25,17 @@ func (p Point) Down() Point {
 	return Point{X: p.X, Y: p.Y + 1}
 }
 
+func (p Point) ManhattenDistance(p2 Point) int {
+	return intAbs(p.X-p2.X) + intAbs(p.Y-p2.Y)
+}
+
+func intAbs(input int) int {
+	if input < 0 {
+		return -1 * input
+	}
+	return input
+}
+
 type Grid struct {
 	Data                   map[Point]rune
 	MinX, MaxX, MinY, MaxY int
