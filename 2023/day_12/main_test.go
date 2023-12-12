@@ -19,31 +19,31 @@ func CountArrangements(input string) int {
 	row := []rune(sections[0])
 	nums := utils.NumbersFromString(sections[1])
 
-	combos := MakeCombinations(row)
-	combos = utils.Filter(combos, func(r []rune, i int) bool { return isValid(r, nums) })
+	combos := MakeCombinations(row, nums)
+	// combos = utils.Filter(combos, func(r []rune, i int) bool { return isValid(r, nums) })
 
-	return len(combos)
+	return combos
 }
 
-func MakeCombinations(input []rune) [][]rune {
-	val := make([][]rune, 0)
-
+func MakeCombinations(input []rune, expectations []int) int {
+	count := 0
 	if slices.Contains(input, UNKNOWN) {
-		newInput := make([]rune, len(input))
-		copy(newInput, input)
-
-		unknownIndex := slices.Index(newInput, UNKNOWN)
-		newInput[unknownIndex] = OPERATIONAL
-		val = append(val, MakeCombinations(newInput)...)
-		newInput = make([]rune, len(input))
-		copy(newInput, input)
-		newInput[unknownIndex] = DAMAGED
-		val = append(val, MakeCombinations(newInput)...)
+		if !tentativelyValid(input, expectations) {
+			return 0
+		}
+		unknownIndex := slices.Index(input, UNKNOWN)
+		input[unknownIndex] = OPERATIONAL
+		count = count + MakeCombinations(input, expectations)
+		input[unknownIndex] = DAMAGED
+		count = count + MakeCombinations(input, expectations)
+		input[unknownIndex] = UNKNOWN
 	} else {
-		val = append(val, input)
+		if isValid(input, expectations) {
+			count++
+		}
 	}
 
-	return val
+	return count
 }
 
 func isValid(input []rune, nums []int) bool {
@@ -55,18 +55,38 @@ func isValid(input []rune, nums []int) bool {
 	for _, rn := range input {
 		if rn == OPERATIONAL {
 			if count > 0 {
-				if len(nums) == 0 || nums[0] != count {
-					return false
-				}
 				nums = nums[1:]
 			}
 			count = 0
 		} else {
 			count++
+			if len(nums) == 0 || count > nums[0] {
+				return false
+			}
 		}
 	}
 	if len(nums) > 1 || (len(nums) == 1 && nums[0] != count) {
 		return false
+	}
+	return true
+}
+
+func tentativelyValid(input []rune, nums []int) bool {
+	count := 0
+	for _, rn := range input {
+		if rn == OPERATIONAL {
+			if count > 0 {
+				if len(nums) == 0 || nums[0] > count {
+					return false
+				}
+				nums = nums[1:]
+			}
+			count = 0
+		} else if rn == DAMAGED {
+			count++
+		} else {
+			return true
+		}
 	}
 	return true
 }
@@ -93,6 +113,41 @@ func TestPartOne(t *testing.T) {
 	lines := utils.Lines(utils.ReadInput(12))
 
 	arrs := utils.Map(lines, func(str string, i int) int { return CountArrangements(str) })
+
+	fmt.Println(utils.SumIntArr(arrs))
+}
+
+func expandLine(str string) string {
+	parts := strings.Split(str, " ")
+	newStr := ""
+
+	nums := strings.Split(parts[1], ",")
+	nNums := make([]string, 0)
+
+	for i := 0; i < 5; i++ {
+		newStr = newStr + parts[0] + "?"
+		nNums = append(nNums, nums...)
+	}
+
+	newStr = newStr[0 : len(newStr)-1]
+	newStr = fmt.Sprintf("%s %s", newStr, strings.Join(nNums, ","))
+
+	return newStr
+
+}
+
+func TestPartTwo(t *testing.T) {
+	fmt.Println(CountArrangements(expandLine("????.######..#####. 1,6,5")))
+	lines := utils.Lines(utils.ReadInput(12))
+
+	lines = utils.Map(lines, func(str string, i int) string {
+		return expandLine(str)
+	})
+
+	arrs := utils.Map(lines, func(str string, i int) int {
+		fmt.Println(i)
+		return CountArrangements(str)
+	})
 
 	fmt.Println(utils.SumIntArr(arrs))
 }
