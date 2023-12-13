@@ -3,10 +3,15 @@ package day12
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
-	"slices"
 	"strings"
 	"testing"
 )
+
+type cacheKey struct {
+	strLoc,
+	numberLoc,
+	groupLength int
+}
 
 const (
 	OPERATIONAL = '.'
@@ -15,84 +20,51 @@ const (
 )
 
 func CountArrangements(input string) int {
-	sections := strings.Split(input, " ")
-	row := []rune(sections[0])
-	nums := utils.NumbersFromString(sections[1])
-
-	combos := MakeCombinations(row, nums)
-	// combos = utils.Filter(combos, func(r []rune, i int) bool { return isValid(r, nums) })
+	input, numStrs, _ := strings.Cut(input, " ")
+	nums := utils.NumbersFromString(numStrs)
+	cache := make(map[cacheKey]int)
+	combos := CountCombos(input, 0, nums, 0, 0, cache)
 
 	return combos
 }
 
-func MakeCombinations(input []rune, expectations []int) int {
+func CountCombos(springs string, springIndex int, damagedSpringGroupSizes []int, groupIndex int, currentGroupLength int, cache map[cacheKey]int) int {
+	key := cacheKey{
+		springIndex,
+		groupIndex,
+		currentGroupLength,
+	}
+
 	count := 0
-	if slices.Contains(input, UNKNOWN) {
-		if !tentativelyValid(input, expectations) {
-			return 0
-		}
-		unknownIndex := slices.Index(input, UNKNOWN)
-		input[unknownIndex] = OPERATIONAL
-		count = count + MakeCombinations(input, expectations)
-		input[unknownIndex] = DAMAGED
-		count = count + MakeCombinations(input, expectations)
-		input[unknownIndex] = UNKNOWN
-	} else {
-		if isValid(input, expectations) {
+
+	if len(springs) == springIndex {
+		if (groupIndex == len(damagedSpringGroupSizes)-1 && damagedSpringGroupSizes[groupIndex] == currentGroupLength) || (len(damagedSpringGroupSizes) == groupIndex && currentGroupLength == 0) {
 			count++
 		}
+	} else if sum, ok := cache[key]; ok {
+		count = sum
+	} else {
+		curr := springs[springIndex]
+		springIndex++
+
+		if curr == UNKNOWN || curr == DAMAGED {
+			count = count + CountCombos(springs, springIndex, damagedSpringGroupSizes, groupIndex, currentGroupLength+1, cache)
+		}
+
+		if curr == OPERATIONAL || curr == UNKNOWN {
+			if currentGroupLength == 0 {
+				count += CountCombos(springs, springIndex, damagedSpringGroupSizes, groupIndex, 0, cache)
+			} else if groupIndex < len(damagedSpringGroupSizes) && damagedSpringGroupSizes[groupIndex] == currentGroupLength {
+				count += CountCombos(springs, springIndex, damagedSpringGroupSizes, groupIndex+1, 0, cache)
+			}
+		}
+
+		cache[key] = count
 	}
 
 	return count
 }
-
-func isValid(input []rune, nums []int) bool {
-	count := 0
-	numDamaged := utils.Count(input, func(r rune) bool { return r == DAMAGED })
-	if numDamaged != utils.SumIntArr(nums) {
-		return false
-	}
-	for _, rn := range input {
-		if rn == OPERATIONAL {
-			if count > 0 {
-				nums = nums[1:]
-			}
-			count = 0
-		} else {
-			count++
-			if len(nums) == 0 || count > nums[0] {
-				return false
-			}
-		}
-	}
-	if len(nums) > 1 || (len(nums) == 1 && nums[0] != count) {
-		return false
-	}
-	return true
-}
-
-func tentativelyValid(input []rune, nums []int) bool {
-	count := 0
-	for _, rn := range input {
-		if rn == OPERATIONAL {
-			if count > 0 {
-				if len(nums) == 0 || nums[0] > count {
-					return false
-				}
-				nums = nums[1:]
-			}
-			count = 0
-		} else if rn == DAMAGED {
-			count++
-		} else {
-			return true
-		}
-	}
-	return true
-}
-
 func TestCountArrangements(t *testing.T) {
-	fmt.Println(isValid([]rune(".###.##.#..."), []int{3, 2, 1}))
 	tests := []struct {
 		input       string
 		expectation int
@@ -135,9 +107,7 @@ func expandLine(str string) string {
 	return newStr
 
 }
-
 func TestPartTwo(t *testing.T) {
-	fmt.Println(CountArrangements(expandLine("????.######..#####. 1,6,5")))
 	lines := utils.Lines(utils.ReadInput(12))
 
 	lines = utils.Map(lines, func(str string, i int) string {
@@ -145,7 +115,6 @@ func TestPartTwo(t *testing.T) {
 	})
 
 	arrs := utils.Map(lines, func(str string, i int) int {
-		fmt.Println(i)
 		return CountArrangements(str)
 	})
 
