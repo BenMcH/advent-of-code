@@ -7,69 +7,117 @@ import (
 	"testing"
 )
 
-func getSplitScore(pattern string) int {
-	lines := utils.Lines(pattern)
+func countDifferences(a, b string) int {
+	count := 0
 
+	for i := range a {
+		if a[i] != b[i] {
+			count++
+		}
+	}
+
+	return count
+}
+
+func findReflection(lines []string, expectedDifference int) int {
 	for i := 0; i < len(lines)-1; i++ {
 		currLine := lines[i]
 		nextLine := lines[i+1]
+		diff := expectedDifference
 
-		if currLine == nextLine {
-			up, down := i, i+1
+		currDiff := countDifferences(currLine, nextLine)
+		diff -= currDiff
+		if diff >= 0 {
+			up, down := i-1, i+2
 
 			symmetric := true
 			for symmetric && up >= 0 && down < len(lines) {
 				currLine = lines[up]
 				nextLine = lines[down]
-				if currLine != nextLine {
+				diff -= countDifferences(currLine, nextLine)
+				if diff < 0 {
 					symmetric = false
 				}
 				down++
 				up--
 			}
-			if symmetric {
-				return 100 * (i + 1)
+			if symmetric && diff == 0 {
+				return (i + 1)
 			}
 		}
 	}
 
-	colLines := utils.Transpose(utils.Map(lines, func(s string, i int) []rune { return []rune(s) }))
-	colStrs := utils.Map(colLines, func(r []rune, i int) string { return string(r) })
+	return 0
+}
 
-	for i := 0; i < len(colStrs)-1; i++ {
-		currLine := colStrs[i]
-		nextLine := colStrs[i+1]
+func getSplitScore(pattern string, expectedDifferences int) int {
+	lines := utils.Lines(pattern)
 
-		if currLine == nextLine {
-			up, down := i, i+1
+	reflection := findReflection(lines, expectedDifferences) * 100
 
-			symmetric := true
-			for symmetric && up >= 0 && down < len(colStrs) {
-				currLine = colStrs[up]
-				nextLine = colStrs[down]
-				if currLine != nextLine {
-					symmetric = false
-				}
-				down++
-				up--
-			}
-			if symmetric {
-				return i + 1
-			}
-		}
+	if reflection == 0 {
+		colLines := utils.Transpose(utils.Map(lines, func(s string, i int) []rune { return []rune(s) }))
+		colStrs := utils.Map(colLines, func(r []rune, i int) string { return string(r) })
+
+		reflection = findReflection(colStrs, expectedDifferences)
 	}
 
-	panic("no repeat found")
+	return reflection
 }
 
 func TestPartOne(t *testing.T) {
-	patterns := strings.Split(utils.ReadInput(13), "\n\n")
+	input := `#.##..##.
+..#.##.#.
+##......#
+##......#
+..#.##.#.
+..##..##.
+#.#.##.#.
+
+#...##..#
+#....#..#
+..##..###
+#####.##.
+#####.##.
+..##..###
+#....#..#
+`
+	input = utils.ReadInput(13)
+	patterns := strings.Split(input, "\n\n")
 	scores := make([]int, len(patterns))
 
 	for i, pattern := range patterns {
-		scores[i] = getSplitScore(pattern)
+		scores[i] = getSplitScore(pattern, 0)
 	}
 
 	fmt.Println(utils.SumIntArr(scores))
 
+}
+
+func TestPartTwo(t *testing.T) {
+	input := `#.##..##.
+..#.##.#.
+##......#
+##......#
+..#.##.#.
+..##..##.
+#.#.##.#.
+
+#...##..#
+#....#..#
+..##..###
+#####.##.
+#####.##.
+..##..###
+#....#..#
+`
+	input = utils.ReadInput(13)
+	patterns := strings.Split(input, "\n\n")
+	scores := make([]int, len(patterns))
+
+	for i, pattern := range patterns {
+		scores[i] = getSplitScore(pattern, 1)
+	}
+
+	fmt.Println(utils.SumIntArr(scores))
 }
