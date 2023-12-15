@@ -3,7 +3,6 @@ package day14
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
-	"strings"
 	"testing"
 )
 
@@ -12,47 +11,6 @@ const (
 	STATIC_STONE  = '#'
 	EMPTY_SPACE   = '.'
 )
-
-func get2dGrid(input string) [][]rune {
-	lines := utils.Lines(input)
-
-	return utils.Map(lines, func(str string, i int) []rune { return []rune(str) })
-}
-
-/*
-	1 2 3
-	4 5 6
-	7 8 9
-
-	7 4 1
-	8 5 2
-	9 6 3
-
-	9 8 7
-	6 5 4
-	3 2 1
-*/
-
-func rotate(input [][]rune) [][]rune {
-	newGrid := make([][]rune, len(input[0]))
-
-	for i := range newGrid {
-		newGrid[i] = make([]rune, len(input))
-	}
-
-	for i := range newGrid {
-		for j := range newGrid[i] {
-			newGrid[i][j] = input[len(newGrid)-1-j][i]
-		}
-	}
-
-	return newGrid
-}
-
-func TestRotate(t *testing.T) {
-	input := get2dGrid("123\n456\n789")
-	printGrid(rotate(input))
-}
 
 func tiltNorth(input [][]rune) [][]rune {
 	newGrid := make([][]rune, len(input))
@@ -82,7 +40,7 @@ func tiltNorth(input [][]rune) [][]rune {
 func spinCycle(input [][]rune) [][]rune {
 	for i := 0; i < 4; i++ {
 		input = tiltNorth(input)
-		input = rotate(input)
+		input = utils.Rotate2dSlice(input)
 	}
 
 	return input
@@ -117,7 +75,7 @@ O..#.OO...
 `
 
 	input = utils.ReadInput(14)
-	grid := get2dGrid(input)
+	grid := utils.Get2DRuneSlice(input)
 	grid = tiltNorth(grid)
 
 	fmt.Println(countLoad(grid))
@@ -129,17 +87,6 @@ func printGrid(grid [][]rune) {
 		fmt.Println(string(row))
 	}
 
-}
-
-func toString(input [][]rune) string {
-	var builder strings.Builder
-
-	for _, arr := range input {
-		builder.WriteString(string(arr))
-		builder.WriteRune('\n')
-	}
-
-	return builder.String()
 }
 
 func TestPartTwo(t *testing.T) {
@@ -157,15 +104,18 @@ O..#.OO...
 
 	cache := make(map[string]int)
 	input = utils.ReadInput(14)
-	grid := get2dGrid(input)
+	grid := utils.Get2DRuneSlice(input)
 	target := 1000000000
+	jumped := false
 	for i := 0; i < target; i++ {
 		grid = spinCycle(grid)
-		if val, ok := cache[toString(grid)]; ok {
+		if val, ok := cache[utils.TwoDimensionalSliceToString(grid)]; ok && !jumped {
+			fmt.Println(val)
+			jumped = true
 			i = (target - i) % (i - val)
 			i = target - i
 		}
-		cache[toString(grid)] = i
+		cache[utils.TwoDimensionalSliceToString(grid)] = i
 	}
 
 	fmt.Println(countLoad(grid))

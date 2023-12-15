@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func StringsToInts(arr []string) ([]int, error) {
@@ -128,4 +130,57 @@ func Count[K any](inputArr []K, f func(K) bool) int {
 	}
 
 	return count
+}
+
+/*
+*
+
+	Rotates a 2d slice clockwise
+
+	1 2 3
+	4 5 6
+	7 8 9
+
+	7 4 1
+	8 5 2
+	9 6 3
+
+	9 8 7
+	6 5 4
+	3 2 1
+*/
+func Rotate2dSlice[T any](input [][]T) [][]T {
+	newGrid := make([][]T, len(input[0]))
+
+	for i := range newGrid {
+		newGrid[i] = make([]T, len(input))
+	}
+
+	for i := range newGrid {
+		for j := range newGrid[i] {
+			newGrid[i][j] = input[len(newGrid)-1-j][i]
+		}
+	}
+
+	return newGrid
+}
+
+func TwoDimensionalSliceToString[T any](input [][]T) string {
+	var builder strings.Builder
+
+	for _, arr := range input {
+		for _, cell := range arr {
+			builder.WriteString(fmt.Sprint(cell))
+		}
+
+		builder.WriteRune('\n')
+	}
+
+	return builder.String()
+}
+
+func Get2DRuneSlice(input string) [][]rune {
+	lines := Lines(input)
+
+	return Map(lines, func(str string, i int) []rune { return []rune(str) })
 }
