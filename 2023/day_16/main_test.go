@@ -29,11 +29,7 @@ type move struct {
 	loc, dir utils.Point
 }
 
-type MirrorMaze struct {
-	grid utils.Grid
-}
-
-func (m MirrorMaze) FindBeams(startingLoc, startingDir utils.Point) map[utils.Point]int {
+func FindBeams(grid utils.Grid, startingLoc, startingDir utils.Point) map[utils.Point]int {
 	queue := []move{{loc: startingLoc, dir: startingDir}}
 	moves := make(map[utils.Point]int)
 	cache := make(map[move]int)
@@ -41,13 +37,13 @@ func (m MirrorMaze) FindBeams(startingLoc, startingDir utils.Point) map[utils.Po
 	for len(queue) > 0 {
 		mv, queue = queue[0], queue[1:]
 
-		if _, ok := cache[mv]; ok || !m.grid.ContainsPoint(mv.loc) {
+		if _, ok := cache[mv]; ok || !grid.ContainsPoint(mv.loc) {
 			continue
 		}
 
 		loc := mv.loc
 		dir := mv.dir
-		cell := m.grid.Data[loc]
+		cell := grid.Data[loc]
 		newLoc := loc.Add(dir)
 		cache[mv]++
 		moves[loc]++
@@ -95,15 +91,15 @@ func (m MirrorMaze) FindBeams(startingLoc, startingDir utils.Point) map[utils.Po
 }
 
 func TestPartOne(t *testing.T) {
-	maze := MirrorMaze{grid: utils.MakeGrid(TEST_CASE)}
-	beams := maze.FindBeams(utils.Point{X: 0, Y: 0}, RIGHT)
+	grid := utils.MakeGrid(TEST_CASE)
+	beams := FindBeams(grid, utils.Point{X: 0, Y: 0}, RIGHT)
 	got := len(beams)
 
 	if got != 46 {
 		t.Error("Wrong answer", got)
 	} else {
-		maze = MirrorMaze{grid: utils.MakeGrid(input)}
-		beams = maze.FindBeams(utils.Point{X: 0, Y: 0}, RIGHT)
+		grid = utils.MakeGrid(input)
+		beams = FindBeams(grid, utils.Point{X: 0, Y: 0}, RIGHT)
 		got = len(beams)
 		fmt.Println(got)
 	}
@@ -111,7 +107,6 @@ func TestPartOne(t *testing.T) {
 
 func PartTwo(input string) int {
 	grid := utils.MakeGrid(input)
-	maze := MirrorMaze{grid: grid}
 	max := 0
 
 	answers := make(chan int, (grid.MaxX+grid.MaxY)*2)
@@ -128,7 +123,7 @@ func PartTwo(input string) int {
 
 	runAsync := func(x, y int, dir utils.Point) {
 		defer wg.Done()
-		beams := maze.FindBeams(utils.Point{X: x, Y: y}, dir)
+		beams := FindBeams(grid, utils.Point{X: x, Y: y}, dir)
 		ans := len(beams)
 		answers <- ans
 	}
