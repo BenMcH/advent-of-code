@@ -9,6 +9,13 @@ type Point struct {
 	X, Y int
 }
 
+func (p Point) Add(p1 Point) Point {
+	return Point{
+		X: p.X + p1.X,
+		Y: p.Y + p1.Y,
+	}
+}
+
 func (p Point) Left() Point {
 	return Point{X: p.X - 1, Y: p.Y}
 }
