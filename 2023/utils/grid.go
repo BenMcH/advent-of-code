@@ -69,6 +69,10 @@ func MakeGrid(input string) (grid Grid) {
 	return
 }
 
+func (grid Grid) ContainsPoint(p Point) bool {
+	return p.X >= grid.MinX && p.X <= grid.MaxX && p.Y >= grid.MinY && p.Y <= grid.MaxY
+}
+
 func (grid Grid) Print() {
 	for y := grid.MinY; y <= grid.MaxY; y++ {
 		for x := grid.MinX; x <= grid.MaxX; x++ {
