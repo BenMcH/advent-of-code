@@ -16,6 +16,20 @@ func (p Point) Add(p1 Point) Point {
 	}
 }
 
+func (p Point) Diff(p1 Point) Point {
+	return Point{
+		X: p1.X - p.X,
+		Y: p1.Y - p.Y,
+	}
+}
+
+func (p Point) Multiply(i int) Point {
+	return Point{
+		X: p.X * i,
+		Y: p.Y * i,
+	}
+}
+
 func (p Point) Left() Point {
 	return Point{X: p.X - 1, Y: p.Y}
 }
