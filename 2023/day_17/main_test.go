@@ -32,12 +32,9 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 	distances := make(map[Move]int)
 	queue := make([]Move, 0)
 
-	startingDir := utils.Point{X: 1, Y: 0}
-
 	move := Move{
-		loc:      startingPoint,
-		dir:      startingDir,
-		straight: 0,
+		loc: startingPoint,
+		dir: utils.Point{X: 1, Y: 0},
 	}
 
 	distances[move] = 0
@@ -67,6 +64,17 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 			if shouldSkip(grid, distances, move, nextMove) {
 				continue
 			}
+
+			if nextMove.dir == move.dir.Multiply(-1) {
+				continue // Can't turn around
+			}
+
+			if val, ok := distances[nextMove]; ok {
+				if newDist >= val {
+					continue
+				}
+			}
+
 			distances[nextMove] = newDist
 
 			queue = append(queue, nextMove)
@@ -78,21 +86,7 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 }
 
 func skipPartOne(grid utils.Grid, distances map[Move]int, move, nextMove Move) bool {
-	if nextMove.straight > 3 {
-		return true
-	}
-
-	if nextMove.dir == move.dir.Multiply(-1) {
-		return true // Can't turn around
-	}
-	newDist := distances[move] + int(grid.Data[nextMove.loc])
-	if val, ok := distances[nextMove]; ok {
-		if newDist >= val {
-			return true
-		}
-	}
-
-	return false
+	return nextMove.straight > 3
 }
 
 func parseInput(input string) (grid utils.Grid) {
@@ -113,8 +107,10 @@ func parseInput(input string) (grid utils.Grid) {
 	return
 }
 
-func PartOne(input string) int {
-	grid := parseInput(input)
+var TEST_GRID = parseInput(TEST_INPUT)
+var REAL_GRID = parseInput(REAL_INPUT)
+
+func PartOne(grid utils.Grid) int {
 	startPoint := utils.Point{X: 0, Y: 0}
 
 	distances := dijkstra(grid, startPoint, skipPartOne)
@@ -133,12 +129,12 @@ func PartOne(input string) int {
 
 func TestPartOne(t *testing.T) {
 
-	got := PartOne(TEST_INPUT)
+	got := PartOne(TEST_GRID)
 
 	if got != 102 {
 		t.Error("Wrong", got, "Expected", 102)
 	} else {
-		fmt.Println(PartOne(REAL_INPUT))
+		fmt.Println(PartOne(REAL_GRID))
 	}
 }
 
@@ -157,22 +153,10 @@ func skipPartTwo(grid utils.Grid, distances map[Move]int, move, nextMove Move) b
 		return true
 	}
 
-	if nextMove.dir == move.dir.Multiply(-1) {
-		return true // Can't turn around
-	}
-
-	newDist := distances[move] + int(grid.Data[nextMove.loc])
-	if val, ok := distances[nextMove]; ok {
-		if newDist >= val {
-			return true
-		}
-	}
-
 	return false
 }
 
-func PartTwo(input string) int {
-	grid := parseInput(input)
+func PartTwo(grid utils.Grid) int {
 	startPoint := utils.Point{X: 0, Y: 0}
 
 	distances := dijkstra(grid, startPoint, skipPartTwo)
@@ -191,11 +175,11 @@ func PartTwo(input string) int {
 
 func TestPartTwo(t *testing.T) {
 
-	got := PartTwo(TEST_INPUT)
+	got := PartTwo(TEST_GRID)
 
 	if got != 94 {
 		t.Error("Wrong", got, "Expected", 94)
 	} else {
-		fmt.Println(PartTwo(REAL_INPUT))
+		fmt.Println(PartTwo(REAL_GRID))
 	}
 }
