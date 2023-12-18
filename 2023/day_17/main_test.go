@@ -2,6 +2,7 @@ package day17
 
 import (
 	"advent-of-code-2023/utils"
+	"container/heap"
 	"fmt"
 	"math"
 	"testing"
@@ -30,12 +31,12 @@ type Move struct {
 
 func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid utils.Grid, move, nextMove Move) bool) map[Move]int {
 	distances := make(map[Move]int)
-
 	costs := make([][]int, grid.MaxY+1)
 
 	for y := grid.MinY; y <= grid.MaxY; y++ {
 		costs[y] = make([]int, grid.MaxX+1)
 		pt := utils.Point{X: 0, Y: y}
+
 		for x := grid.MinX; x <= grid.MaxX; x++ {
 			pt.X = x
 			costs[y][x] = int(grid.Data[pt])
@@ -48,18 +49,21 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 	}
 
 	distances[move] = 0
-	queue := []Move{move}
+	queue := make(utils.PriorityQueue, 0)
+	heap.Init(&queue)
+
+	heap.Push(&queue, &utils.PriorityQueueItem{Value: move, Priority: 0})
 
 	for len(queue) > 0 {
-		move, queue = queue[0], queue[1:]
+		item := heap.Pop(&queue).(*utils.PriorityQueueItem)
+		move = item.Value.(Move)
 		moveDist := distances[move]
 
-		neighbors := move.loc.Neighbors4()
-
-		for _, neighbor := range neighbors {
+		for _, neighbor := range move.loc.Neighbors4() {
 			if !grid.ContainsPoint(neighbor) {
 				continue
 			}
+
 			nextMove := Move{
 				loc:      neighbor,
 				dir:      move.loc.Diff(neighbor),
@@ -80,8 +84,7 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 			}
 
 			distances[nextMove] = newDist
-
-			queue = append(queue, nextMove)
+			heap.Push(&queue, &utils.PriorityQueueItem{Value: nextMove, Priority: newDist})
 		}
 	}
 
@@ -114,11 +117,8 @@ var REAL_GRID = parseInput(REAL_INPUT)
 
 func PartOne(grid utils.Grid) int {
 	startPoint := utils.Point{X: 0, Y: 0}
-
 	distances := dijkstra(grid, startPoint, skipPartOne)
-
 	exitPoint := utils.Point{X: grid.MaxX, Y: grid.MaxY}
-
 	minDist := math.MaxInt
 
 	for k, v := range distances {
@@ -131,7 +131,6 @@ func PartOne(grid utils.Grid) int {
 }
 
 func TestPartOne(t *testing.T) {
-
 	got := PartOne(TEST_GRID)
 
 	if got != 102 {
@@ -142,16 +141,11 @@ func TestPartOne(t *testing.T) {
 }
 
 func skipPartTwo(grid utils.Grid, move, nextMove Move) bool {
-	if move.straight > 0 && move.straight < 4 && nextMove.straight == 1 { // Check above 0 to avoid the first cell being counted as a turn
-		return true
-	}
-
-	if nextMove.straight > 10 {
+	if nextMove.straight > 10 || (move.straight > 0 && move.straight < 4 && nextMove.straight == 1) { // Check above 0 to avoid the first cell being counted as a turn
 		return true
 	}
 
 	end := utils.Point{X: grid.MaxX, Y: grid.MaxY}
-
 	if nextMove.loc == end && nextMove.straight < 4 {
 		return true
 	}
@@ -161,11 +155,8 @@ func skipPartTwo(grid utils.Grid, move, nextMove Move) bool {
 
 func PartTwo(grid utils.Grid) int {
 	startPoint := utils.Point{X: 0, Y: 0}
-
 	distances := dijkstra(grid, startPoint, skipPartTwo)
-
 	exitPoint := utils.Point{X: grid.MaxX, Y: grid.MaxY}
-
 	minDist := math.MaxInt
 
 	for k, v := range distances {
@@ -178,7 +169,6 @@ func PartTwo(grid utils.Grid) int {
 }
 
 func TestPartTwo(t *testing.T) {
-
 	got := PartTwo(TEST_GRID)
 
 	if got != 94 {
