@@ -28,9 +28,19 @@ type Move struct {
 	straight int
 }
 
-func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid utils.Grid, distances map[Move]int, move, nextMove Move) bool) map[Move]int {
+func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid utils.Grid, move, nextMove Move) bool) map[Move]int {
 	distances := make(map[Move]int)
-	queue := make([]Move, 0)
+
+	costs := make([][]int, grid.MaxY+1)
+
+	for y := grid.MinY; y <= grid.MaxY; y++ {
+		costs[y] = make([]int, grid.MaxX+1)
+		pt := utils.Point{X: 0, Y: y}
+		for x := grid.MinX; x <= grid.MaxX; x++ {
+			pt.X = x
+			costs[y][x] = int(grid.Data[pt])
+		}
+	}
 
 	move := Move{
 		loc: startingPoint,
@@ -38,61 +48,53 @@ func dijkstra(grid utils.Grid, startingPoint utils.Point, shouldSkip func(grid u
 	}
 
 	distances[move] = 0
-	queue = append(queue, move)
+	queue := []Move{move}
 
 	for len(queue) > 0 {
 		move, queue = queue[0], queue[1:]
+		moveDist := distances[move]
 
-		for _, neighbor := range move.loc.Neighbors4() {
+		neighbors := move.loc.Neighbors4()
+
+		for _, neighbor := range neighbors {
 			if !grid.ContainsPoint(neighbor) {
 				continue
 			}
-			newDir := move.loc.Diff(neighbor)
-
 			nextMove := Move{
 				loc:      neighbor,
-				dir:      newDir,
+				dir:      move.loc.Diff(neighbor),
 				straight: 1,
 			}
 
-			if newDir == move.dir {
+			if nextMove.dir == move.dir {
 				nextMove.straight = move.straight + 1
 			}
 
-			newDist := distances[move] + int(grid.Data[nextMove.loc])
-
-			if shouldSkip(grid, distances, move, nextMove) {
+			if nextMove.dir == move.dir.Multiply(-1) || shouldSkip(grid, move, nextMove) {
 				continue
 			}
 
-			if nextMove.dir == move.dir.Multiply(-1) {
-				continue // Can't turn around
-			}
-
-			if val, ok := distances[nextMove]; ok {
-				if newDist >= val {
-					continue
-				}
+			newDist := moveDist + costs[nextMove.loc.Y][nextMove.loc.X]
+			if val, ok := distances[nextMove]; ok && newDist >= val {
+				continue
 			}
 
 			distances[nextMove] = newDist
 
 			queue = append(queue, nextMove)
 		}
-
 	}
 
 	return distances
 }
 
-func skipPartOne(grid utils.Grid, distances map[Move]int, move, nextMove Move) bool {
+func skipPartOne(grid utils.Grid, move, nextMove Move) bool {
 	return nextMove.straight > 3
 }
 
 func parseInput(input string) (grid utils.Grid) {
 	grid = utils.MakeGrid(input)
 
-	// parse runes to int values
 	for y := grid.MinY; y <= grid.MaxY; y++ {
 		for x := grid.MinX; x <= grid.MaxX; x++ {
 			pt := utils.Point{
@@ -116,15 +118,16 @@ func PartOne(grid utils.Grid) int {
 	distances := dijkstra(grid, startPoint, skipPartOne)
 
 	exitPoint := utils.Point{X: grid.MaxX, Y: grid.MaxY}
-	minHeatloss := utils.IntPow(2, 50)
 
-	for key, val := range distances {
-		if key.loc == exitPoint && val < minHeatloss {
-			minHeatloss = val
+	minDist := math.MaxInt
+
+	for k, v := range distances {
+		if k.loc == exitPoint && v < minDist {
+			minDist = v
 		}
 	}
 
-	return minHeatloss
+	return minDist
 }
 
 func TestPartOne(t *testing.T) {
@@ -138,7 +141,7 @@ func TestPartOne(t *testing.T) {
 	}
 }
 
-func skipPartTwo(grid utils.Grid, distances map[Move]int, move, nextMove Move) bool {
+func skipPartTwo(grid utils.Grid, move, nextMove Move) bool {
 	if move.straight > 0 && move.straight < 4 && nextMove.straight == 1 { // Check above 0 to avoid the first cell being counted as a turn
 		return true
 	}
@@ -162,15 +165,16 @@ func PartTwo(grid utils.Grid) int {
 	distances := dijkstra(grid, startPoint, skipPartTwo)
 
 	exitPoint := utils.Point{X: grid.MaxX, Y: grid.MaxY}
-	minHeatloss := math.MaxInt
 
-	for key, val := range distances {
-		if key.loc == exitPoint && val < minHeatloss {
-			minHeatloss = val
+	minDist := math.MaxInt
+
+	for k, v := range distances {
+		if k.loc == exitPoint && v < minDist {
+			minDist = v
 		}
 	}
 
-	return minHeatloss
+	return minDist
 }
 
 func TestPartTwo(t *testing.T) {
