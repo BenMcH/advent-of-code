@@ -9,6 +9,13 @@ type Point struct {
 	X, Y int
 }
 
+func (p Point) Copy() Point {
+	return Point{
+		X: p.X,
+		Y: p.Y,
+	}
+}
+
 func (p Point) Add(p1 Point) Point {
 	return Point{
 		X: p.X + p1.X,

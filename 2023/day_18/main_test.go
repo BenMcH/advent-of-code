@@ -3,7 +3,6 @@ package day18
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -27,54 +26,87 @@ U 2 (#7a21e3)
 
 var REAL_INPUT = utils.ReadInput(18)
 
-func findEmpty(grid [][]rune) utils.Point {
-	firstCell := utils.Point{}
-
-	for y, row := range grid {
-		if y == 0 {
-			continue
-		}
-		for x := 0; x < len(row)-1; x++ {
-			if row[x] == '#' {
-				if row[x+1] == '.' {
-					firstCell.X = x + 1
-					firstCell.Y = y
-
-					return firstCell
-				}
-				continue
-			}
-		}
-	}
-
-	return firstCell
+type LineSegment struct {
+	start, end utils.Point
 }
 
-func flood(grid [][]rune) {
-	cellsToFlood := make([]utils.Point, 0)
-	cell := findEmpty(grid)
+type DigMovement struct {
+	direction string
+	distance  int
+}
 
-	cellsToFlood = append(cellsToFlood, cell)
+func parsePartOneInput(input string) []DigMovement {
+	lines := utils.Lines(input)
+	arr := make([]DigMovement, len(lines))
+	for i, line := range lines {
+		parts := strings.Split(line, " ")
+		dist, _ := strconv.Atoi(parts[1])
 
-	for len(cellsToFlood) > 0 {
-		fmt.Println(len(cellsToFlood))
-		cell, cellsToFlood = cellsToFlood[0], cellsToFlood[1:]
-		grid[cell.Y][cell.X] = '#'
-
-		for _, pt := range cell.Neighbors4() {
-			if grid[pt.Y][pt.X] == '#' || slices.Contains(cellsToFlood, pt) {
-				continue
-			}
-			cellsToFlood = append(cellsToFlood, pt)
+		arr[i] = DigMovement{
+			direction: parts[0],
+			distance:  dist,
 		}
 	}
+
+	return arr
+}
+
+func parsePartTwoInput(input string) []DigMovement {
+	dirMap := map[byte]string{
+		'2': "L",
+		'0': "R",
+		'3': "U",
+		'1': "D",
+	}
+	lines := utils.Lines(input)
+	arr := make([]DigMovement, len(lines))
+	for i, line := range lines {
+		parts := strings.Split(line, " ")
+		str := parts[2]
+		str = "" + str[2:8]
+		directionNum := str[len(str)-1]
+		str = str[0 : len(str)-1]
+		dist, _ := strconv.ParseInt(str, 16, 64)
+
+		arr[i] = DigMovement{
+			direction: dirMap[directionNum],
+			distance:  int(dist),
+		}
+	}
+
+	return arr
 }
 
 func PartOne(input string) int {
-	point := utils.Point{X: 0, Y: 0}
-	digsites := make(map[utils.Point]rune)
+	movements := parsePartOneInput(input)
 
-	lines := utils.Lines(input)
+	return findArea(movements)
+}
+
+func shoelace(segments []LineSegment) int {
+	a := 0
+	b := 0
+
+	segmentCopy := make([]LineSegment, len(segments))
+	copy(segmentCopy, segments)
+
+	for _, segment := range segmentCopy {
+		b = b + (segment.start.Y * segment.end.X)
+		a = a + segment.start.X*segment.end.Y
+	}
+
+	total := a - b
+
+	if total < 0 {
+		total = -total
+	}
+
+	return total / 2
+}
+
+func findArea(movement []DigMovement) int {
+	point := utils.Point{X: 0, Y: 0}
+	total := 0
 
 	dirMap := map[string]utils.Point{
 		"L": point.Left(),
@@ -83,66 +115,25 @@ func PartOne(input string) int {
 		"D": point.Down(),
 	}
 
-	minX, minY := 0, 0
-	maxX, maxY := 0, 0
+	borders := make([]LineSegment, 0)
 
-	for _, line := range lines {
-		parts := strings.Split(line, " ")
-		dir := dirMap[parts[0]]
-		dist, _ := strconv.Atoi(parts[1])
+	for _, mv := range movement {
+		dir := dirMap[mv.direction]
+		total += mv.distance
 
-		for dist > 0 {
-			digsites[point] = '#'
-			point = point.Add(dir)
-			dist--
+		amplitude := dir.Multiply(mv.distance)
+		end := point.Add(amplitude)
+
+		segment := LineSegment{
+			start: point,
+			end:   end,
 		}
 
-		if point.X > maxX {
-			maxX = point.X
-		} else if point.X < minX {
-			minX = point.X
-		}
-
-		if point.Y > maxY {
-			maxY = point.Y
-		} else if point.Y < minY {
-			minY = point.Y
-		}
+		borders = append(borders, segment)
+		point = end
 	}
 
-	fmt.Println(minX, maxX, minY, maxY)
-
-	arr := make([][]rune, maxY-minY+1)
-
-	for y := range arr {
-		arr[y] = make([]rune, maxX-minX+1)
-		point.Y = y + minY
-
-		for x := range arr[y] {
-			point.X = x + minX
-
-			if digsites[point] == '#' {
-				arr[y][x] = '#'
-			} else {
-				arr[y][x] = '.'
-			}
-			// fmt.Print(string(arr[y][x]))
-		}
-		// fmt.Println()
-	}
-
-	flood(arr)
-
-	count := 0
-
-	for _, row := range arr {
-		for _, cell := range row {
-			if cell == '#' {
-				count++
-			}
-		}
-	}
-	return count
+	return shoelace(borders) + total/2 + 1
 }
 
 func TestPartOne(t *testing.T) {
@@ -152,7 +143,23 @@ func TestPartOne(t *testing.T) {
 		t.Error("Wrong", got, "Expected", 62)
 		return
 	}
-	fmt.Println("HERE")
 
 	fmt.Println(PartOne(REAL_INPUT))
+}
+
+func PartTwo(input string) int {
+	movements := parsePartTwoInput(input)
+
+	return findArea(movements)
+}
+
+func TestPartTwo(t *testing.T) {
+	got := PartTwo(TEST_INPUT)
+
+	if got != 952408144115 {
+		t.Error("Wrong", got, "Expected", 952408144115)
+		return
+	}
+
+	fmt.Println(PartTwo(REAL_INPUT))
 }
