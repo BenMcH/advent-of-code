@@ -47,9 +47,16 @@ func parseParts(input string) []Part {
 	return arr
 }
 
-type Rule func(p Part) (bool, string)
+type RuleFunc func(p Part) (bool, string)
 
-type Ruleset map[string][]Rule
+type RuleParams struct {
+	f         RuleFunc
+	variable  byte
+	operation byte
+	target    int
+}
+
+type Ruleset map[string][]RuleParams
 
 func parseRuleset(input string) Ruleset {
 	rs := make(Ruleset)
@@ -59,7 +66,7 @@ func parseRuleset(input string) Ruleset {
 
 	for _, line := range lines {
 		line, _ := strings.CutSuffix(line, "}")
-		rules := make([]Rule, 0)
+		ruleParams := make([]RuleParams, 0)
 		sections := strings.Split(line, "{")
 
 		ruleList := strings.Split(sections[1], ",")
@@ -98,13 +105,23 @@ func parseRuleset(input string) Ruleset {
 					return false, ""
 				}
 
-				rules = append(rules, rule)
+				params := RuleParams{
+					f:         rule,
+					variable:  ch,
+					operation: op,
+					target:    num[0],
+				}
+
+				ruleParams = append(ruleParams, params)
 			} else {
-				rules = append(rules, func(p Part) (bool, string) { return true, ruleStr })
+				params := RuleParams{
+					f: func(p Part) (bool, string) { return true, ruleStr },
+				}
+				ruleParams = append(ruleParams, params)
 			}
 		}
 
-		rs[sections[0]] = rules
+		rs[sections[0]] = ruleParams
 	}
 
 	return rs
@@ -125,7 +142,7 @@ func PartOne(input string) int {
 			rules := ruleset[key]
 
 			for _, rule := range rules {
-				if matched, next := rule(part); matched {
+				if matched, next := rule.f(part); matched {
 					key = next
 					break
 				}
