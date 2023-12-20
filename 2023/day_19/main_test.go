@@ -46,7 +46,7 @@ func parseParts(input string) []Part {
 type RuleFunc func(p Part) (bool, string)
 
 type RuleParams struct {
-	f         RuleFunc
+	validate  RuleFunc
 	variable  byte
 	operation byte
 	num       int64
@@ -90,7 +90,7 @@ func parseRuleset(input string) Ruleset {
 				}
 
 				params := RuleParams{
-					f:         rule,
+					validate:  rule,
 					variable:  ch,
 					operation: op,
 					num:       int64(num[0]),
@@ -100,8 +100,8 @@ func parseRuleset(input string) Ruleset {
 				ruleParams = append(ruleParams, params)
 			} else {
 				params := RuleParams{
-					f:      func(p Part) (bool, string) { return true, ruleStr },
-					target: ruleStr,
+					validate: func(p Part) (bool, string) { return true, ruleStr },
+					target:   ruleStr,
 				}
 				ruleParams = append(ruleParams, params)
 			}
@@ -128,7 +128,7 @@ func PartOne(input string) int {
 			rules := ruleset[key]
 
 			for _, rule := range rules {
-				if matched, next := rule.f(part); matched {
+				if matched, next := rule.validate(part); matched {
 					key = next
 					break
 				}
