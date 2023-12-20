@@ -7,7 +7,8 @@ import (
 	"testing"
 )
 
-const TEST_INPUT = `px{a<2006:qkq,m>2090:A,rfg}
+const TEST_INPUT = `
+px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
 lnx{m>1548:A,A}
 rfg{s<537:gd,x>2440:R,A}
@@ -26,9 +27,9 @@ hdj{m>838:A,pv}
 {x=2127,m=1623,a=2188,s=1013}
 `
 
-type Part struct {
-	x, m, a, s int
-}
+type Part [4]int
+
+var PART_INDEXES = map[byte]int{'x': 0, 'm': 1, 'a': 2, 's': 3}
 
 func parseParts(input string) []Part {
 	lines := utils.Lines(input)
@@ -36,12 +37,7 @@ func parseParts(input string) []Part {
 
 	for i, line := range lines {
 		numbers := utils.NumbersFromString(line)
-		arr[i] = Part{
-			x: numbers[0],
-			m: numbers[1],
-			a: numbers[2],
-			s: numbers[3],
-		}
+		arr[i] = Part{numbers[0], numbers[1], numbers[2], numbers[3]}
 	}
 
 	return arr
@@ -53,15 +49,14 @@ type RuleParams struct {
 	f         RuleFunc
 	variable  byte
 	operation byte
-	target    int
+	num       int64
+	target    string
 }
 
 type Ruleset map[string][]RuleParams
 
 func parseRuleset(input string) Ruleset {
 	rs := make(Ruleset)
-
-	// qqz{s>2770:qs,m<1801:hdj,R}
 	lines := utils.Lines(input)
 
 	for _, line := range lines {
@@ -79,18 +74,7 @@ func parseRuleset(input string) Ruleset {
 				num := utils.NumbersFromString(parts[0])
 
 				rule := func(p Part) (bool, string) {
-					val := 0
-					if ch == 'x' {
-						val = p.x
-					} else if ch == 'm' {
-						val = p.m
-					} else if ch == 'a' {
-						val = p.a
-					} else if ch == 's' {
-						val = p.s
-					} else {
-						panic(fmt.Sprintf("unknown char %s", string(ch)))
-					}
+					val := p[PART_INDEXES[ch]]
 
 					if op == '>' {
 						if val > num[0] {
@@ -109,13 +93,15 @@ func parseRuleset(input string) Ruleset {
 					f:         rule,
 					variable:  ch,
 					operation: op,
-					target:    num[0],
+					num:       int64(num[0]),
+					target:    target,
 				}
 
 				ruleParams = append(ruleParams, params)
 			} else {
 				params := RuleParams{
-					f: func(p Part) (bool, string) { return true, ruleStr },
+					f:      func(p Part) (bool, string) { return true, ruleStr },
+					target: ruleStr,
 				}
 				ruleParams = append(ruleParams, params)
 			}
@@ -150,7 +136,9 @@ func PartOne(input string) int {
 		}
 
 		if key == "A" {
-			sum += (part.x + part.m + part.a + part.s)
+			for _, num := range part {
+				sum += num
+			}
 		}
 	}
 
@@ -167,4 +155,92 @@ func TestPartOne(t *testing.T) {
 	}
 
 	fmt.Println(PartOne(utils.ReadInput(19)))
+}
+
+type Range struct {
+	start, end int64
+}
+
+func (r Range) Copy() Range {
+	return Range{
+		start: r.start,
+		end:   r.end,
+	}
+}
+
+type Combos [4]Range
+
+func (c Combos) Combinations() int64 {
+	var product int64 = 1
+
+	for _, cmb := range c {
+		product *= cmb.end - cmb.start + 1
+	}
+
+	return product
+}
+
+func CountCombinations(rules Ruleset, combo Combos, node string) int64 {
+	if node == "A" {
+		return combo.Combinations()
+	}
+
+	var sum int64 = 0
+	for _, rule := range rules[node] {
+		if rule.num == 'R' {
+			continue
+		}
+
+		index := PART_INDEXES[rule.variable]
+		rng := combo[index].Copy()
+
+		if rule.operation == '>' && rng.start < rule.num {
+			rng.start = rule.num + 1
+			combo[index].end = rule.num
+		}
+		if rule.operation == '<' && rng.end > rule.num {
+			rng.end = rule.num - 1
+			combo[index].start = rule.num
+		}
+
+		var newCombos Combos = [4]Range{}
+		for i, _range := range combo {
+			if i == index {
+				newCombos[i] = rng
+			} else {
+				newCombos[i] = _range
+			}
+		}
+
+		sum += CountCombinations(rules, newCombos, rule.target)
+	}
+
+	return sum
+}
+
+func PartTwo(input string) int64 {
+	sections := strings.Split(input, "\n\n")
+	ruleset := parseRuleset(sections[0])
+
+	var combo Combos = [4]Range{}
+
+	for i := range combo {
+		combo[i] = Range{
+			start: 1,
+			end:   4000,
+		}
+	}
+
+	return CountCombinations(ruleset, combo, "in")
+}
+
+func TestPartTwo(t *testing.T) {
+	got := PartTwo(TEST_INPUT)
+	var expected int64 = 167409079868000
+
+	if got != expected {
+		t.Error("Wrong", got, "Expected", expected, "Diff", got-expected)
+	}
+
+	fmt.Println(PartTwo(utils.ReadInput(19)))
 }
