@@ -78,13 +78,6 @@ func parseInput(input string) map[string]*Module {
 	lines := utils.Lines(input)
 	modules := make(map[string]*Module, len(lines))
 
-	modules["output"] = &Module{
-		typeStr:      "O",
-		name:         "output",
-		destinations: make([]string, 0),
-		memory:       map[string]bool{},
-	}
-
 	for i, line := range lines {
 		line = strings.ReplaceAll(line, " -> ", " ")
 		line = strings.ReplaceAll(line, ",", "")
@@ -195,12 +188,9 @@ func PartTwo(data map[string]*Module) int {
 
 			if slices.Contains(targets, signal.source) && signal.value == HIGH_PULSE {
 				index := slices.Index(targets, signal.source)
-				if periods[index] == 0 {
-					periods[index] = x
-				}
+				periods[index] = x
 
 				p := 1
-
 				for _, val := range periods {
 					p *= val
 				}
