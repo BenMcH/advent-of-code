@@ -3,6 +3,7 @@ package day20
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -11,15 +12,6 @@ const (
 	HIGH_PULSE = true
 	LOW_PULSE  = false
 )
-
-/*
-broadcaster -> a, b, c
-%a -> b
-%b -> c
-%c -> inv
-&inv -> a
-
-*/
 
 type Module struct {
 	name         string
@@ -58,14 +50,6 @@ func (m *Module) sendPulse(source string, pulse bool) []Signal {
 			})
 		}
 	} else if m.typeStr == "&" { // Conjunction
-		/*
-			Conjunction modules (prefix &) remember the type of the most recent pulse received
-			from each of their connected input modules; they initially default to remembering a
-			low pulse for each input. When a pulse is received, the conjunction module first updates
-			its memory for that input. Then, if it remembers high pulses for all inputs,
-			it sends a low pulse; otherwise, it sends a high pulse.
-		*/
-
 		m.memory[source] = pulse
 		allHigh := true
 
@@ -144,9 +128,7 @@ type Signal struct {
 	value  bool
 }
 
-func PartOne(input string) int {
-	data := parseInput(input)
-
+func PartOne(data map[string]*Module) int {
 	low, high := 0, 0
 
 	var signal Signal
@@ -162,38 +144,82 @@ func PartOne(input string) int {
 			signal, queue = queue[0], queue[1:]
 
 			if signal.value == HIGH_PULSE {
-				// fmt.Println(signal.source, "-high->", signal.dest)
 				high++
 			} else {
-				// fmt.Println(signal.source, "-low->", signal.dest)
 				low++
 			}
 
 			destination := data[signal.dest]
-			// fmt.Println(destination)
-
 			newSignals := destination.sendPulse(signal.source, signal.value)
-			// data[signal.dest] = destination // Why is this needed??
-
 			queue = append(queue, newSignals...)
 		}
 	}
 
-	fmt.Println(low, high)
 	return low * high
 }
 
 func TestPartOne(t *testing.T) {
-	got := PartOne(`broadcaster -> a
+	data := parseInput(`broadcaster -> a
 %a -> inv, con
 &inv -> b
 %b -> con
 &con -> output
 `)
+	got := PartOne(data)
 	if got != 11687500 {
 		t.Error("Wrong", got, "Expected", 11687500)
 		return
 	}
 
-	fmt.Println(PartOne(utils.ReadInput(20)))
+	data = parseInput(utils.ReadInput(20))
+
+	fmt.Println(PartOne(data))
+}
+
+func PartTwo(data map[string]*Module) int {
+	targets := []string{"lk", "fn", "fh", "hh"} // 4 conjunctions leading to end
+	periods := []int{0, 0, 0, 0}                // Track the period at which this input goes high
+
+	x := 1
+	for {
+		var signal Signal
+		queue := make([]Signal, 0)
+
+		queue = append(queue, Signal{
+			source: "button",
+			dest:   "broadcaster",
+			value:  LOW_PULSE,
+		})
+		for len(queue) > 0 {
+			signal, queue = queue[0], queue[1:]
+
+			if slices.Contains(targets, signal.source) && signal.value == HIGH_PULSE {
+				index := slices.Index(targets, signal.source)
+				if periods[index] == 0 {
+					periods[index] = x
+				}
+
+				p := 1
+
+				for _, val := range periods {
+					p *= val
+				}
+
+				if p > 0 { // A 0 period (not found) will result in a 0 p value
+					return p
+				}
+			}
+
+			destination := data[signal.dest]
+			newSignals := destination.sendPulse(signal.source, signal.value)
+			queue = append(queue, newSignals...)
+		}
+		x++
+	}
+}
+
+func TestPartTwo(t *testing.T) {
+	data := parseInput(utils.ReadInput(20))
+
+	fmt.Println(PartTwo(data))
 }
