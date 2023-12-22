@@ -92,10 +92,9 @@ func fall(blocks []Block) []Block {
 	return blocks
 }
 
-func PartOne(input string) int {
-	blocks, _ := readBlocks(input)
+type Dependency map[int][]int
 
-	blocks = fall(blocks)
+func generateDependencies(blocks []Block) (Dependency, Dependency) {
 	supportsList := make(map[int][]int)
 	supportedByList := make(map[int][]int)
 
@@ -111,11 +110,17 @@ func PartOne(input string) int {
 				supportedByList[i] = append(supportedByList[i], j)
 			}
 		}
-
 	}
 
-	total := 0
+	return supportsList, supportedByList
+}
 
+func PartOne(input string) int {
+	blocks, _ := readBlocks(input)
+	blocks = fall(blocks)
+	supportsList, supportedByList := generateDependencies(blocks)
+
+	total := 0
 	for i := range blocks {
 		allSupported := true
 		for _, j := range supportsList[i] {
@@ -142,4 +147,68 @@ func TestPartOne(t *testing.T) {
 	}
 
 	fmt.Println(PartOne(utils.ReadInput(22)))
+}
+
+func PartTwo(input string) int {
+	blocks, _ := readBlocks(input)
+	blocks = fall(blocks)
+	supportsList, supportedByList := generateDependencies(blocks)
+
+	total := 0
+
+	for i := range blocks {
+		queue := make([]int, 0)
+		falling := utils.Set[int]{}
+
+		falling.Add(i)
+
+		for _, supportedId := range supportsList[i] {
+			if len(supportedByList[supportedId]) == 1 {
+				falling.Add(supportedId)
+				queue = append(queue, supportedId)
+			}
+		}
+
+		for len(queue) > 0 {
+			var item int
+			item, queue = queue[0], queue[1:]
+
+			supportList := supportedByList[item]
+
+			canFall := true
+			for _, supportId := range supportList {
+				isFalling := falling.Has(supportId)
+
+				if !isFalling {
+					canFall = false
+				}
+			}
+
+			if canFall {
+				falling[item] = true
+				for _, nItem := range supportsList[item] {
+					if falling.Has(nItem) {
+						continue
+					}
+					queue = append(queue, nItem)
+				}
+			}
+		}
+
+		total += len(falling) - 1
+	}
+
+	return total
+}
+
+func TestPartTwo(t *testing.T) {
+	expected := 7
+	got := PartTwo(TEST_INPUT)
+
+	if got != expected {
+		fmt.Println("Wrong", got, "expected", expected)
+		return
+	}
+
+	fmt.Println(PartTwo(utils.ReadInput(22)))
 }
