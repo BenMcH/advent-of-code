@@ -115,6 +115,18 @@ func (p Point) Neighbors4() []Point {
 	return arr
 }
 
+func (p Point) IsAdjacent(p2 Point) bool {
+	pNeighbors := p.Neighbors4()
+
+	for _, neighbor := range pNeighbors {
+		if neighbor == p2 {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (p Point) Neighbors8() []Point {
 	arr := make([]Point, 8)
 
