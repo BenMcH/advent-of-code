@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -183,4 +185,15 @@ func Get2DRuneSlice(input string) [][]rune {
 	lines := Lines(input)
 
 	return Map(lines, func(str string, i int) []rune { return []rune(str) })
+}
+
+func Shuffle[T any](arr []T) []T {
+	newArr := slices.Clone(arr)
+
+	for i := range newArr {
+		j := rand.Intn(i + 1)
+		newArr[i], newArr[j] = newArr[j], newArr[i]
+	}
+
+	return newArr
 }

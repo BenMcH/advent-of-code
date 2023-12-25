@@ -12,7 +12,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sudo apt update && sudo apt install entr"
+	"postCreateCommand": "sudo apt update && sudo apt install entr && sudo apt install z3"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
