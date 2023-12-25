@@ -3,6 +3,8 @@ package day24
 import (
 	"advent-of-code-2023/utils"
 	"fmt"
+	"os"
+	"os/exec"
 	"testing"
 )
 
@@ -126,13 +128,61 @@ func TestPartOne(t *testing.T) {
 }
 
 func partTwo(input string) int {
-	return 0
+	hailstones := parseHailstones(input)
+	smtTxt := `
+(declare-const x Int)
+(declare-const y Int)
+(declare-const z Int)
+(declare-const dx Int)
+(declare-const dy Int)
+(declare-const dz Int)
+`
+
+	for i, stone := range hailstones[:3] {
+		t := i + 1
+
+		smtTxt += fmt.Sprintf("(declare-const t%d Int)\n", t)
+		smtTxt += fmt.Sprintf(`
+(assert(= (+ (* t%d dx ) x) (+ (* %d t%d) %d)))
+		`, t, int(stone.px), t, int(stone.x))
+		smtTxt += fmt.Sprintf(`
+(assert(= (+ (* t%d dy ) y) (+ (* %d t%d) %d)))
+		`, t, int(stone.py), t, int(stone.y))
+		smtTxt += fmt.Sprintf(`
+(assert(= (+ (* t%d dz ) z) (+ (* %d t%d) %d)))
+		`, t, int(stone.pz), t, int(stone.z))
+	}
+
+	smtTxt += `
+(check-sat)
+(eval (+ x y z))
+`
+	dir := os.TempDir()
+	f, err := os.CreateTemp(dir, "z3")
+
+	if err != nil {
+		panic(err)
+	}
+
+	f.WriteString(smtTxt)
+
+	f.Close()
+
+	fPath := f.Name()
+	cmd := exec.Command("z3", "parallel.enable=true", fPath)
+
+	cmd.Wait()
+
+	out, _ := cmd.Output()
+	outStr := string(out)
+	nums := utils.NumbersFromString(outStr)
+
+	return nums[0]
 }
 
 func TestPartTwo(t *testing.T) {
-	t.SkipNow()
 	got := partTwo(TEST_INPUT)
-	expected := 5
+	expected := 47
 
 	if got != expected {
 		t.Error("Wrong", got, "Expected", expected)
