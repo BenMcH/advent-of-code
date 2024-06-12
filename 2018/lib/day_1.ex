@@ -20,15 +20,10 @@ defmodule AdventOfCode2018 do
       find_repeating_freq(inputs)
     end
 
-    def find_repeating_freq(list, freq \\ 0, map \\ %{}) do
-      if Map.has_key?(map, freq) do
-        freq
-      else
-        [head | tail] = list
+    def find_repeating_freq(list, freq \\ 0, map \\ %{})
 
-        find_repeating_freq(tail ++ [head], freq + head, Map.put_new(map, freq, 1))
-      end
-    end
+    def find_repeating_freq(_, freq, map) when is_map_key(map, freq), do: freq
+    def find_repeating_freq([head | tail], freq, map), do: find_repeating_freq(tail ++ [head], freq + head, Map.put_new(map, freq, 1))
   end
 
   defmodule Input do
