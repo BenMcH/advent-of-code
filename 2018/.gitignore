@@ -24,5 +24,3 @@ advent_of_code_2018-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
-
-inputs/
