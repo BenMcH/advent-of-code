@@ -1,0 +1,23 @@
+require 'rake/testtask'
+
+Rake::TestTask.new do |t|
+  t.pattern = "lib/*_test.rb"
+end
+
+
+namespace :aoc do
+  task :gen do
+    day = ENV["DAY"] || ENV["day"]
+
+    if File.exist?("lib/day_#{day}.rb")
+      puts "Day #{day} already exists"
+      exit
+    end
+    File.write("lib/day_#{day}.rb", File.read("resources/template.rb").gsub("DAY", day))
+    File.write("lib/day_#{day}_test.rb", File.read("resources/template_test.rb").gsub("DAY", day))
+  end
+  
+  task :test do
+    ruby "lib/day_#{ENV["DAY"] || ENV["day"]}_test.rb"
+  end
+end
