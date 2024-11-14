@@ -1,4 +1,4 @@
-class Day1
+class Day01
 
   def self.part_1(input)
     return 0

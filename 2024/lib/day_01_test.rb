@@ -1,6 +1,6 @@
 require 'minitest/autorun'
 
-require_relative './day_1'
+require_relative './day_01'
 require_relative './helpers'
 
 @test_input = <<~INPUT
@@ -13,17 +13,15 @@ INPUT
 
 class Day1Test < Minitest::Test
   def test_part_1
-    skip("Not implemented")
-
-    assert_equal 1, Day1.part_1(@test_input)
+    assert_equal 1, Day01.part_1(@test_input)
     
-    puts "Part 1: #{Day1.part_1(@input)}"
+    puts "Part 1: #{Day01.part_1(@input)}"
   end
 
   def test_part_2
     skip("Not implemented")
-    assert_equal 1, Day1.part_2(@test_input)
+    assert_equal 1, Day01.part_2(@test_input)
 
-    puts "Part 2: #{Day1.part_2(@input)}"
+    puts "Part 2: #{Day01.part_2(@input)}"
   end
 end

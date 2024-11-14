@@ -8,16 +8,22 @@ end
 namespace :aoc do
   task :gen do
     day = ENV["DAY"] || ENV["day"]
-
-    if File.exist?("lib/day_#{day}.rb")
+    padded_day = day.to_s.rjust(2, "0")
+    
+    if File.exist?("lib/day_#{padded_day}.rb")
       puts "Day #{day} already exists"
       exit
     end
-    File.write("lib/day_#{day}.rb", File.read("resources/template.rb").gsub("DAY", day))
-    File.write("lib/day_#{day}_test.rb", File.read("resources/template_test.rb").gsub("DAY", day))
+    
+    process = Proc.new {|string| string.gsub("ZPDAY", padded_day).gsub("DAY", day)}
+    File.write("lib/day_#{padded_day}.rb", process.call(File.read("resources/template.rb")))
+    File.write("lib/day_#{padded_day}_test.rb", process.call(File.read("resources/template_test.rb")))
   end
   
   task :test do
-    ruby "lib/day_#{ENV["DAY"] || ENV["day"]}_test.rb"
+    day = ENV["DAY"] || ENV["day"]
+    day = day.to_s.rjust(2, "0")
+
+    ruby "lib/day_#{day}_test.rb"
   end
 end
