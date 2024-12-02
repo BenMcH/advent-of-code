@@ -14,9 +14,7 @@ class Day02
       
       i = 0
 
-      for i in 0..(report.length - 2)
-        a = report[i]
-        b = report[i + 1]
+      report.each_cons(2) do |a, b|
         if a >= b || b - a > 3
           safe = false
           break
