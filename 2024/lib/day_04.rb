@@ -29,14 +29,14 @@ class Day04
   end
 
   def self.check_reverse_diagonal(multi_dim_array, row, col)
-    if row < 3 || col < 3
+    if row > multi_dim_array.length - 4 || col < 3
       return 0
     end 
     
     a = multi_dim_array[row][col]
-    b = multi_dim_array[row - 1][col - 1]
-    c = multi_dim_array[row - 2][col - 2]
-    d = multi_dim_array[row - 3][col - 3]
+    b = multi_dim_array[row + 1][col - 1]
+    c = multi_dim_array[row + 2][col - 2]
+    d = multi_dim_array[row + 3][col - 3]
     
     str = "#{a}#{b}#{c}#{d}"
     
