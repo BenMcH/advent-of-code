@@ -30,7 +30,7 @@ class Day4Test < Minitest::Test
   end
 
   def test_part_2
-    assert_equal 1, Day04.part_2(@test_input)
+    assert_equal 9, Day04.part_2(@test_input)
 
     puts "Part 2: #{Day04.part_2(@input)}"
   end
