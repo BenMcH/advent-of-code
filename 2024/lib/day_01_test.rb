@@ -21,12 +21,19 @@ class Day1Test < Minitest::Test
 
   def test_part_1
     assert_equal 11, Day01.part_1(@test_input)
-    puts "Part 1: #{Day01.part_1(@input)}"
+
+    answer = Day01.part_1(@input)
+    puts "Part 1: #{answer}"
+
+    AdventOfCodeHelpers.submit_answer(1, answer, 1)
   end
 
   def test_part_2
     assert_equal 31, Day01.part_2(@test_input)
 
-    puts "Part 2: #{Day01.part_2(@input)}"
+    answer = Day01.part_2(@input)
+    puts "Part 2: #{answer}"
+
+    AdventOfCodeHelpers.submit_answer(1, answer, 2)
   end
 end

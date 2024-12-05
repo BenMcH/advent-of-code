@@ -28,6 +28,41 @@ class AdventOfCodeHelpers
     end
   end
 
+  def self.submit_answer(day, answer, level)
+    file_name = "./inputs/day-#{day}-#{level}.txt"
+
+    if File.exist?(file_name)
+      return
+    end
+
+    puts "Submit Day #{day}, Level #{level}: #{answer}?"
+
+    a = gets.chomp
+
+    if a[0].downcase != "y"
+      return
+    end
+
+    res = Net::HTTP.post(URI("https://adventofcode.com/#{ENV["AOC_YEAR"] || 2024}/day/#{day}/answer"), "level=#{level}&answer=#{answer}", { Cookie: "session=#{ENV["AOC_SESSION"]}", "User-Agent" => "Ben McHone <ben@mchone.dev>" })
+
+    # Status will be 200 whether or not the answer is correct. We must check the body. The response is in a <main><article> tag.
+    body = res.body
+
+    if body.include?("That's not the right answer")
+      File.write("./inputs/error.html", body)
+      raise Exception.new("Incorrect answer")
+    end
+
+    if body.include?("You gave an answer too recently")
+      raise Exception.new("Too soon")
+    end
+
+    if body.include?("That's the right answer")
+      puts "Correct! Finished Part #{level}"
+      File.write("./inputs/day-#{day}-#{level}.txt", answer)
+    end
+  end
+
   # Strings
   def self.lines(string)
     string.split("\n")
