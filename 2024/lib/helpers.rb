@@ -40,7 +40,9 @@ class AdventOfCodeHelpers
       return true
     end
 
-    File.write(file_name, body)
+    unless level == 2 && body.include?("name=\"level\" value=\"1\"")
+      File.write(file_name, body)
+    end
 
     return false
   end
