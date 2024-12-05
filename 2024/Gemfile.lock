@@ -64,6 +64,7 @@ GEM
       rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
+    rufo (0.18.0)
     solargraph (0.48.0)
       backport (~> 1.2)
       benchmark
@@ -95,6 +96,7 @@ DEPENDENCIES
   rake (~> 13.2)
   rerun (~> 0.14.0)
   ruby-lsp (~> 0.21.3)
+  rufo (~> 0.18.0)
   solargraph (~> 0.48.0)
 
 BUNDLED WITH

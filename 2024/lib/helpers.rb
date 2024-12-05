@@ -69,4 +69,12 @@ class AdventOfCodeHelpers
       v + arr2[i]
     end
   end
+  
+  def self.rotate_ccw(arr)
+    arr.transpose.reverse
+  end
+  
+  def self.rotate_cw(arr)
+    arr.transpose
+  end
 end

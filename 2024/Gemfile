@@ -15,3 +15,5 @@ gem "ruby-lsp", "~> 0.21.3", :group => :development
 gem "solargraph", "~> 0.48.0"
 
 gem "rerun", "~> 0.14.0", :group => :development
+
+gem "rufo", "~> 0.18.0", :group => :development
