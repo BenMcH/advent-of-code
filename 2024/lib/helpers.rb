@@ -28,10 +28,27 @@ class AdventOfCodeHelpers
     end
   end
 
+  def self.can_submit?(day, level)
+    file_name = "./inputs/day-#{day}-#{level}.txt"
+    if File.exist?(file_name)
+      return false
+    end
+
+    body = Net::HTTP.get(URI("https://adventofcode.com/#{ENV["AOC_YEAR"] || 2024}/day/#{day}"), { Cookie: "session=#{ENV["AOC_SESSION"]}", "User-Agent" => "Ben McHone <ben@mchone.dev>" })
+
+    if body.include?("name=\"level\" value=\"#{level}\"")
+      return true
+    end
+
+    File.write(file_name, body)
+
+    return false
+  end
+
   def self.submit_answer(day, answer, level)
     file_name = "./inputs/day-#{day}-#{level}.txt"
 
-    if File.exist?(file_name)
+    unless can_submit?(day, level)
       return
     end
 
