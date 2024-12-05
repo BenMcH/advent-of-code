@@ -1,7 +1,7 @@
-require 'minitest/autorun'
+require "minitest/autorun"
 
-require_relative './day_01'
-require_relative './helpers'
+require_relative "./day_01"
+require_relative "./helpers"
 
 class Day1Test < Minitest::Test
   def setup
@@ -13,9 +13,9 @@ class Day1Test < Minitest::Test
       3   9
       3   3
     INPUT
-    
+
     @test_input = @test_input.strip
-    
+
     @input = AdventOfCodeHelpers.get_input(1)
   end
 

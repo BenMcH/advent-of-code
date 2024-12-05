@@ -1,7 +1,7 @@
-require 'minitest/autorun'
+require "minitest/autorun"
 
-require_relative './day_02'
-require_relative './helpers'
+require_relative "./day_02"
+require_relative "./helpers"
 
 class Day2Test < Minitest::Test
   def setup
@@ -21,7 +21,7 @@ class Day2Test < Minitest::Test
 
   def test_part_1
     assert_equal 2, Day02.part_1(@test_input)
-    
+
     puts "Part 1: #{Day02.part_1(@input)}"
   end
 
