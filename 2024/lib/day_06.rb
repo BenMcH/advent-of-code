@@ -1,6 +1,20 @@
 require_relative "./helpers"
 
 class Day06
+  def self.parse(input)
+    grid = input.strip.split("\n").map(&:chars)
+    start = []
+
+    grid.each_with_index do |row, i|
+      row.each_with_index do |col, j|
+        if col == "^"
+          start = [i, j]
+        end
+      end
+    end
+
+    return grid, start
+  end
   def self.turn(dir)
     case dir
     when [-1, 0] then [0, 1]
@@ -11,37 +25,30 @@ class Day06
   end
 
   def self.part_1(input)
-    grid = input.strip.split("\n").map(&:chars)
+    grid, start = parse(input)
 
-    visited, reason = walk(grid)
+    visited, reason = walk(grid, start)
 
-    return visited.count
+    return visited.uniq.count
   end
 
-  def self.walk(grid)
-    guard_pos = [0, 0]
+  def self.walk(grid, start)
+    guard_row = start[0]
+    guard_col = start[1]
     guard_dir = [-1, 0]
 
-    visited = {}
+    visited = []
     states = {}
-    steps = 0
 
-    grid.each_with_index do |row, i|
-      row.each_with_index do |col, j|
-        if col == "^"
-          guard_pos = [i, j]
-          visited["#{i},#{j}"] = true
-          # states[[i, j] + guard_dir] = true
-        end
-      end
-    end
+    row_length = grid.length
+    col_length = grid[0].length
 
     while true
-      row = guard_pos[0] + guard_dir[0]
-      col = guard_pos[1] + guard_dir[1]
+      row = guard_row + guard_dir[0]
+      col = guard_col + guard_dir[1]
 
-      if row < 0 || col < 0 || row >= grid.length || col >= grid[0].length
-        return visited.keys, "LEFT"
+      if row < 0 || col < 0 || row >= row_length || col >= col_length
+        return visited, "LEFT"
       end
 
       if grid[row][col] == "#"
@@ -49,37 +56,39 @@ class Day06
         next
       end
 
-      guard_pos[0] = row
-      guard_pos[1] = col
-      visited["#{row},#{col}"] = true
+      guard_row = row
+      guard_col = col
+      visited.push "#{row},#{col}"
 
-      state_key = "#{row},#{col},#{guard_dir[0]},#{guard_dir[1]}"
-      if states[state_key]
-        return visited.keys, "LOOP"
+      key = row * 100000 + col * 100 + guard_dir[0] * 10 + guard_dir[1]
+
+      # state_key = "#{row},#{col},#{guard_dir[0]},#{guard_dir[1]}"
+      if states[key]
+        return visited, "LOOP"
       end
 
-      states[state_key] = true
+      states[key] = true
     end
   end
 
   def self.part_2(input)
-    grid = input.strip.split("\n").map(&:chars)
+    grid, start = parse(input)
 
-    positions, _ = walk(grid)
-    positions = positions.map { |pos| pos.split(",").map(&:to_i) }
+    positions, _ = walk(grid, start)
+    positions = positions.uniq.map { |pos| pos.split(",").map(&:to_i) }
 
-    positions.map.with_index do |pos, index|
+    positions.count do |pos|
       i, j = pos
 
-      next if grid[i][j] == "^"
+      next if i == start[0] && j == start[1]
 
       grid[i][j] = "#"
 
-      _, reason = walk(grid)
+      _, reason = walk(grid, start)
 
       grid[i][j] = "."
 
-      reason
-    end.count("LOOP")
+      reason == "LOOP"
+    end
   end
 end
