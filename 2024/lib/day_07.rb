@@ -8,23 +8,15 @@ class Day07
   end
 
   def self.can_solve(target, numbers, part_2 = false)
-    if numbers.length == 0
-      return target == 0
-    end
-
     first, *rest = numbers
 
+    return target == 0 if numbers.length == 0
     return false if first > target || target < 0
 
-    nums = []
-
-    if target >= first
-      return true if can_solve(target - first, rest, part_2)
-    end
-
-    if target % first == 0
-      return true if can_solve(target / first, rest, part_2)
-    end
+    # Addition
+    return true if target >= first && can_solve(target - first, rest, part_2)
+    # Multiplication
+    return true if target % first == 0 && can_solve(target / first, rest, part_2)
 
     if part_2
       t_str = target.to_s
@@ -35,7 +27,7 @@ class Day07
       end
     end
 
-    return false
+    false
   end
 
   def self.part_1(input)
