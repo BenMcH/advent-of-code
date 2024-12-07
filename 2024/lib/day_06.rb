@@ -24,14 +24,6 @@ class Day06
     end
   end
 
-  def self.part_1(input)
-    grid, start = parse(input)
-
-    visited, _ = walk(grid, start)
-
-    return visited.uniq.count
-  end
-
   def self.walk(grid, start, part_2 = false, guard_dir = [-1, 0], states = {})
     guard_row = start[0]
     guard_col = start[1]
@@ -69,6 +61,14 @@ class Day06
       return visited, 1 if states[key]
       states[key] = true
     end
+  end
+
+  def self.part_1(input)
+    grid, start = parse(input)
+
+    visited, _ = walk(grid, start)
+
+    return visited.uniq.count
   end
 
   def self.part_2(input)

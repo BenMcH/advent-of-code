@@ -36,7 +36,6 @@ class Day6Test < Minitest::Test
 
   def test_part_2
     assert_equal 6, Day06.part_2(@test_input)
-    print("Here")
 
     answer = Day06.part_2(@input)
     puts "Part 2: #{answer}"
