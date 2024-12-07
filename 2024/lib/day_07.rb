@@ -13,6 +13,9 @@ class Day07
     end
 
     first, second, *rest = numbers
+
+    return false if first > target
+
     nums = [
       first + second,
       first * second,
