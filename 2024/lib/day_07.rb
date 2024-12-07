@@ -7,14 +7,22 @@ class Day07
     end
   end
 
-  def self.can_solve(target, numbers)
+  def self.can_solve(target, numbers, part_2 = false)
     if numbers.length == 1
       return numbers[0] == target
     end
 
     first, second, *rest = numbers
+    nums = [
+      first + second,
+      first * second,
+    ]
 
-    return can_solve(target, [first + second, *rest]) || can_solve(target, [first * second, *rest])
+    if part_2
+      nums << "#{first}#{second}".to_i
+    end
+
+    return nums.any? { |num| can_solve(target, [num] + rest, part_2) }
   end
 
   def self.part_1(input)
@@ -24,6 +32,8 @@ class Day07
   end
 
   def self.part_2(input)
-    return 0
+    input = parse input
+
+    return input.filter { |line| can_solve(line[0], line[1..], true) }.map(&:first).sum
   end
 end
