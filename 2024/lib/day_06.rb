@@ -30,34 +30,35 @@ class Day06
       row.each_with_index do |col, j|
         if col == "^"
           guard_pos = [i, j]
-          visited[[i, j]] = true
+          visited["#{i},#{j}"] = true
           # states[[i, j] + guard_dir] = true
         end
       end
     end
 
     while true
-      new_pos = AdventOfCodeHelpers.add_number_arrays(guard_pos, guard_dir)
-
-      row, col = new_pos
+      row = guard_pos[0] + guard_dir[0]
+      col = guard_pos[1] + guard_dir[1]
 
       if row < 0 || col < 0 || row >= grid.length || col >= grid[0].length
         return visited.keys, "LEFT"
       end
 
-      if grid[new_pos[0]][new_pos[1]] == "#"
+      if grid[row][col] == "#"
         guard_dir = turn(guard_dir)
         next
       end
 
-      guard_pos = new_pos
-      visited[guard_pos] = true
+      guard_pos[0] = row
+      guard_pos[1] = col
+      visited["#{row},#{col}"] = true
 
-      if states[guard_pos + guard_dir]
+      state_key = "#{row},#{col},#{guard_dir[0]},#{guard_dir[1]}"
+      if states[state_key]
         return visited.keys, "LOOP"
       end
 
-      states[guard_pos + guard_dir] = true
+      states[state_key] = true
     end
   end
 
@@ -65,6 +66,7 @@ class Day06
     grid = input.strip.split("\n").map(&:chars)
 
     positions, _ = walk(grid)
+    positions = positions.map { |pos| pos.split(",").map(&:to_i) }
 
     positions.map.with_index do |pos, index|
       i, j = pos
