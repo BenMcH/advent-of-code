@@ -89,6 +89,8 @@ class Day09
 
   def self.compact_files(input)
     idx = input.length
+    frees = input.map.with_index { |m, i| [m, i] }.select { |m| m[0].id == -1 }
+
     loop do
       return input if idx == 0
       idx -= 1
@@ -115,7 +117,6 @@ class Day09
         input.insert(free_idx, item.dup)
         item.id = -1
       end
-      combine_memory(input, [idx, idx + 1])
     end
   end
 
