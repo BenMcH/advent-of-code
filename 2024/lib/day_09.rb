@@ -31,7 +31,7 @@ class Day09
     end
   end
 
-  def self.compact(input, allow_fragmentation = true)
+  def self.compact(input)
     free_idx = 0
     loop do
       free_idx += 1 while free_idx < input.length - 1 && input[free_idx].id != -1
@@ -52,7 +52,7 @@ class Day09
       elsif free.size == non_free.size
         free.id = non_free.id
         non_free.id = -1
-      elsif allow_fragmentation
+      else
         input.insert(non_free_idx, free.dup)
         free.id = non_free.id
         non_free.size = non_free.size - free.size
