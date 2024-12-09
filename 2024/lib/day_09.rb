@@ -16,6 +16,7 @@ class Day09
 
   def self.combine_memory(input, potential_changes)
     potential_changes = potential_changes.sort.reverse
+    changed = false
 
     for idx in potential_changes
       next if idx < 1 || idx > input.length - 2
@@ -24,11 +25,14 @@ class Day09
       if idx > 0 && imo.id == i.id
         imo.size += i.size
         input.delete_at(idx)
+        changed = true
       elsif idx < input.length - 1 && ipo.id == i.id
         i.size += ipo.size
         input.delete_at(idx + 1)
+        changed = true
       end
     end
+    changed
   end
 
   def self.compact(input)
@@ -84,7 +88,6 @@ class Day09
   end
 
   def self.compact_files(input)
-    frees = input.map.with_index { |m, i| [m, i] }.select { |m, i| m.id == -1 }
     idx = input.length
     loop do
       return input if idx == 0
@@ -92,8 +95,13 @@ class Day09
       idx -= 1 while idx > 0 && input[idx].id == -1
 
       item = input[idx]
-      free = frees.find do |free, i|
-        free.size >= item.size && i < idx
+      free = nil
+
+      for i in 0..idx
+        if input[i].id == -1 && input[i].size >= item.size
+          free = [input[i], i]
+          break
+        end
       end
 
       next unless free
@@ -102,17 +110,12 @@ class Day09
       if free_cell.size == item.size
         free_cell.id = item.id
         item.id = -1
-        free[1] = idx
-        # frees.append([item, idx])
       else
-        free_cell, free_idx = free
         free_cell.size -= item.size
-        free[1] += item.size
         input.insert(free_idx, item.dup)
         item.id = -1
       end
-      combine_memory(input, [free_idx, free_idx + 1, idx, idx + 1])
-      frees = input.map.with_index { |m, i| [m, i] }.select { |m, i| m.id == -1 }
+      combine_memory(input, [idx, idx + 1])
     end
   end
 
