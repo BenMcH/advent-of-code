@@ -26,8 +26,9 @@ class Day9Test < Minitest::Test
   end
 
   def test_part_2
-    skip("Part 2 not yet implemented")
-    assert_equal 1, Day09.part_2(@test_input)
+    # skip("p2")
+    assert_equal 2858, Day09.part_2(@test_input)
+    p "Part 2 starting"
 
     answer = Day09.part_2(@input)
     puts "Part 2: #{answer}"

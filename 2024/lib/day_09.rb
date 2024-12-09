@@ -18,6 +18,7 @@ class Day09
     potential_changes = potential_changes.sort.reverse
 
     for idx in potential_changes
+      next if idx < 1 || idx > input.length - 2
       imo, i, ipo = input[idx - 1], input[idx], input[idx + 1]
 
       if idx > 0 && imo.id == i.id
@@ -30,14 +31,16 @@ class Day09
     end
   end
 
-  def self.compact(input)
-    free_idx = -1
+  def self.compact(input, allow_fragmentation = true)
+    free_idx = 0
     loop do
       free_idx += 1 while free_idx < input.length - 1 && input[free_idx].id != -1
 
       return input if free_idx >= input.length - 1
 
-      non_free_idx = input.rindex { |m| m.id != -1 }
+      non_free_idx = input.rindex do |m|
+        m.id != -1
+      end
 
       free = input[free_idx]
       non_free = input[non_free_idx]
@@ -49,7 +52,7 @@ class Day09
       elsif free.size == non_free.size
         free.id = non_free.id
         non_free.id = -1
-      else
+      elsif allow_fragmentation
         input.insert(non_free_idx, free.dup)
         free.id = non_free.id
         non_free.size = non_free.size - free.size
@@ -77,15 +80,46 @@ class Day09
     input = parse(input)
     input = compact(input)
 
-    p "Time: #{Time.now - start}"
-
-    p input.length
-
     checksum(input)
   end
+
+  def self.compact_files(input)
+    frees = input.map.with_index { |m, i| [m, i] }.select { |m, i| m.id == -1 }
+    idx = input.length
+    loop do
+      return input if idx == 0
+      idx -= 1
+      idx -= 1 while idx > 0 && input[idx].id == -1
+
+      item = input[idx]
+      free = frees.find do |free, i|
+        free.size >= item.size && i < idx
+      end
+
+      next unless free
+      free_cell, free_idx = free
+
+      if free_cell.size == item.size
+        free_cell.id = item.id
+        item.id = -1
+        free[1] = idx
+        # frees.append([item, idx])
+      else
+        free_cell, free_idx = free
+        free_cell.size -= item.size
+        free[1] += item.size
+        input.insert(free_idx, item.dup)
+        item.id = -1
+      end
+      combine_memory(input, [free_idx, free_idx + 1, idx, idx + 1])
+      frees = input.map.with_index { |m, i| [m, i] }.select { |m, i| m.id == -1 }
+    end
+  end
+
   def self.part_2(input)
     input = parse(input)
-    # input = compact(input)
+
+    input = compact_files(input)
 
     checksum(input)
   end
