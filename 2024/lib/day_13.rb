@@ -17,27 +17,29 @@ class Day13
     end
   end
 
-  def self.solve(game)
+  def self.solve(game, p2 = false)
     ax, ay = game.a
     bx, by = game.b
     prizex, prizey = game.prize
+
+    if p2
+      prizex += 10000000000000
+      prizey += 10000000000000
+    end
 
     tokens = Float::INFINITY
 
     for a in 0..(prizex / ax).floor
       loc = [ax * a, ay * a]
-      for b in 0..(prizey / by).floor
-        b_loc = [bx * b, by * b]
-        total_loc = [loc[0] + b_loc[0], loc[1] + b_loc[1]]
 
-        break if total_loc[0] > prizex || total_loc[1] > prizey
+      diff = [prizex - loc[0], prizey - loc[1]]
 
-        if total_loc[0] == prizex && total_loc[1] == prizey
-          cur_tokens = 3 * a + b
-          tokens = cur_tokens if cur_tokens < tokens
+      modx = diff[0] % bx
+      mody = diff[1] % by
 
-          break
-        end
+      if modx == 0 && mody == 0 && diff[0] / bx == diff[1] / by
+        cur_tokens = 3 * a + (diff[0] / bx)
+        tokens = cur_tokens if cur_tokens < tokens
       end
     end
 
@@ -51,6 +53,8 @@ class Day13
   end
 
   def self.part_2(input)
-    return 0
+    games = parse(input).map { |game| solve(game, true) }.filter { |tokens| tokens != Float::INFINITY }
+
+    return games.sum
   end
 end
