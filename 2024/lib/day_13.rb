@@ -27,23 +27,17 @@ class Day13
       prizey += 10000000000000
     end
 
-    tokens = Float::INFINITY
+    d = ax * by - ay * bx
 
-    for a in 0..(prizex / ax).floor
-      loc = [ax * a, ay * a]
+    dx = prizex * by - prizey * bx
+    dy = ax * prizey - ay * prizex
 
-      diff = [prizex - loc[0], prizey - loc[1]]
+    x = dx.to_f / d
+    y = dy.to_f / d
 
-      modx = diff[0] % bx
-      mody = diff[1] % by
+    return Float::INFINITY if x < 0 || x.to_i != x || y < 0 || y.to_i != y
 
-      if modx == 0 && mody == 0 && diff[0] / bx == diff[1] / by
-        cur_tokens = 3 * a + (diff[0] / bx)
-        tokens = cur_tokens if cur_tokens < tokens
-      end
-    end
-
-    tokens
+    return 3 * x.to_i + y.to_i
   end
 
   def self.part_1(input)
