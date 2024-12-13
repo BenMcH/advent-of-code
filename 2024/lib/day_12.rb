@@ -26,14 +26,18 @@ class Day12
   end
 
   def self.price(group)
-    group.map do |k, v|
+    fences = group.map do |k, v|
       [
-        group[[k[0] + 1, k[1]]],
-        group[[k[0] - 1, k[1]]],
-        group[[k[0], k[1] + 1]],
-        group[[k[0], k[1] - 1]],
-      ].count(nil)
-    end.sum * group.keys.length
+        [k[0] + 1, k[1]],
+        [k[0] - 1, k[1]],
+        [k[0], k[1] + 1],
+        [k[0], k[1] - 1],
+      ].filter do |n|
+        group[n].nil?
+      end
+    end
+
+    fences.map { |f| f.length }.sum * group.keys.length
   end
 
   def self.part_1(input)
