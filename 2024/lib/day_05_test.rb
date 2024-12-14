@@ -54,7 +54,7 @@ class Day5Test < Minitest::Test
 
   def test_part_2
     assert_equal 123, Day05.part_2(@test_input)
-    
+
     answer = Day05.part_2(@input)
     puts "Part 2: #{answer}"
 
