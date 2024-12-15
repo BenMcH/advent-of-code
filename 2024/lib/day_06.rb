@@ -6,9 +6,9 @@ class Day06
     start = []
 
     grid.each_with_index do |row, i|
-      row.each_with_index do |col, j|
+      row.each_with_index do |col, x|
         if col == "^"
-          start = [i, j]
+          start = [i, x]
         end
       end
     end

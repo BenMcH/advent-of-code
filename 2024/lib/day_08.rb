@@ -5,9 +5,9 @@ class Day08
     nodes = {}
 
     input.each_with_index do |row, i|
-      row.each_with_index do |col, j|
+      row.each_with_index do |col, x|
         if col.downcase.match(/[a-z0-9]/)
-          nodes[[i, j]] = col
+          nodes[[i, x]] = col
         end
       end
     end
