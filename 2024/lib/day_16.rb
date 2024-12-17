@@ -2,7 +2,7 @@ class Day16
   Location = Struct.new(:x, :y, :dir)
 
   def self.step(location)
-    Location.new(location.x + location.dir[0], location.y + location.dir[1], location.dir)
+    Location.new(location.x + location.dir[1], location.y + location.dir[0], location.dir)
   end
 
   def self.turn_left(loc)
@@ -95,7 +95,7 @@ class Day16
       end
     end
 
-    min_e - 1000
+    min_e
   end
 
   def self.part_2(input)
