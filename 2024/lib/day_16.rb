@@ -99,6 +99,73 @@ class Day16
   end
 
   def self.part_2(input)
-    return 0
+    input, start, end_loc = parse input
+
+    locs = [start]
+
+    min_e = Float::INFINITY
+
+    while locs.length > 0
+      loc = locs.shift
+
+      if loc.x == end_loc.x && loc.y == end_loc.y
+        min_e = [min_e, input[loc]].min
+      end
+
+      stepped = step(loc)
+      if input[stepped] && input[stepped] > input[loc] + 1
+        input[stepped] = input[loc] + 1
+        locs << stepped
+      end
+
+      left = turn_left(loc)
+      right = turn_right(loc)
+
+      if input[left] > input[loc] + 1000
+        input[left] = input[loc] + 1000
+        locs << left
+      end
+
+      if input[right] > input[loc] + 1000
+        input[right] = input[loc] + 1000
+        locs << right
+      end
+    end
+
+    queue = [end_loc,
+             turn_left(end_loc),
+             turn_right(end_loc),
+             turn_left(turn_left(end_loc))].filter { |loc| input[loc] == min_e }.uniq
+
+    # p queue
+    locs = [end_loc, start]
+    unstep = lambda { |loc|
+      Location.new(loc.x - loc.dir[1], loc.y - loc.dir[0], loc.dir)
+    }
+
+    while queue.length > 0
+      loc = queue.shift
+
+      unstepped = unstep.call(loc)
+
+      if input[unstepped] == input[loc] - 1
+        locs << loc
+        queue << unstepped
+      end
+
+      left = turn_left(loc)
+      if input[left] == input[loc] - 1000
+        locs << left
+        queue << left
+      end
+
+      right = turn_right(loc)
+      if input[right] == input[loc] - 1000
+        locs << right
+        queue << right
+      end
+    end
+
+    locs.map { |loc| loc.x * 1000 + loc.y }.uniq.count
   end
 end
