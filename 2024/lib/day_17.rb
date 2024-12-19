@@ -75,6 +75,31 @@ class Day17
   end
 
   def self.part_2(input)
-    return 0
+    a, b, c, *prog = input.scan(/\d+/).map(&:to_i)
+    a = 8 ** (prog.size - 1)
+
+    rev_prog = prog.reverse
+
+    loop do
+      computer = Computer.new(a, b, c, prog, 0, false)
+
+      out = []
+
+      until computer.halted
+        _out, computer.halted = cycle(computer)
+        out += _out
+      end
+
+      return a if out == prog
+
+      pow = Math.log(a, 8).truncate
+
+      out.reverse_each.with_index do |n, i|
+        break unless rev_prog[i] == n
+        pow -= 1
+      end
+
+      a += 8 ** pow
+    end
   end
 end
