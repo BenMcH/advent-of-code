@@ -34,10 +34,8 @@ class Day20
     ]
   end
 
-  def self.neighbors_2(point)
-    n = neighbors(point)
-
-    n.flat_map { |p| neighbors(p) }
+  def self.manhattan_dist(point, point_2)
+    return (point.y - point_2.y).abs + (point.x - point_2.x).abs
   end
 
   def self.walk(grid, scores, point)
@@ -55,14 +53,15 @@ class Day20
     end
   end
 
-  def self.count_cheats(scores, end_p, target)
+  def self.count_cheats(scores, end_p, target, skips = 2)
     count = 0
     scores.each do |k, v|
-      n2 = neighbors_2(k)
-      n2.each do |p|
-        score = scores[p]
+      scores.each do |k2, score|
+        next if score <= v
+        dist = manhattan_dist(k, k2)
+        next if dist > skips
 
-        if score != Float::INFINITY and score > v + target + 1
+        if score != Float::INFINITY and score > v + target + (dist - 1)
           count += 1
         end
       end
@@ -79,7 +78,11 @@ class Day20
     count_cheats(scores, end_p, target)
   end
 
-  def self.part_2(input)
-    return 0
+  def self.part_2(input, target = 100)
+    grid, scores, start, end_p = parse(input)
+
+    walk(grid, scores, start)
+
+    count_cheats(scores, end_p, target, 20)
   end
 end
