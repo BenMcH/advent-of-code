@@ -44,29 +44,16 @@ class Day23
   end
 
   def self.expand_clique(clique, connections, checked)
-    set, *rest = clique.map { |x| connections[x] }
-    possibilities = []
-    return possibilities if checked.include?(clique)
-
+    return if checked.include?(clique)
     checked << clique
-
-    # p "Before: #{set.length}"
-    rest.each do |x|
-      set = set.intersection(x)
-    end
-    # p "After: #{set.length}"
+    set = clique.map { |x| connections[x] }.reduce(&:&)
 
     set.each do |x|
-      n_clique = Set.new(clique)
+      n_clique = clique.dup
       n_clique << x
 
-      possibilities << n_clique
-
-      c = expand_clique(n_clique, connections, checked)
-      possibilities << c if c != []
+      expand_clique(n_clique, connections, checked)
     end
-
-    checked
   end
 
   def self.part_2(input)
@@ -80,8 +67,6 @@ class Day23
       expand_clique(Set.new(clique), connections, checked)
     end
 
-    checked.max_by do |c|
-      c.length
-    end.to_a.sort.join(",")
+    checked.max_by { |c| c.length }.to_a.sort.join(",")
   end
 end
