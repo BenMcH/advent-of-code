@@ -1,14 +1,10 @@
 require "set"
 
 class Day22
-  def self.evolve_secret(secret, steps = 1)
-    steps.times do
-      secret = ((secret * 64) ^ secret) % 16777216
-      secret = ((secret / 32) ^ secret) % 16777216
-      secret = ((secret * 2048) ^ secret) % 16777216
-    end
-
-    secret
+  def self.evolve_secret(secret)
+    secret = ((secret * 64) ^ secret) % 16777216
+    secret = ((secret / 32) ^ secret) % 16777216
+    secret = ((secret * 2048) ^ secret) % 16777216
   end
 
   def self.part_1(input)
@@ -17,7 +13,8 @@ class Day22
     total = 0
 
     input.each do |i|
-      total += Day22.evolve_secret(i, 2000)
+      2000.times { i = Day22.evolve_secret(i) }
+      total += i
     end
 
     total
@@ -28,7 +25,6 @@ class Day22
     answer_hash = Hash.new(0)
 
     input.each_with_index do |i, idx|
-      out = []
       _output = Set.new
       diffs = 0
 
