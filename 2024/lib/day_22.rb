@@ -1,19 +1,10 @@
 class Day22
-  def self.evolve_secret(secret)
-    mix = Proc.new { |x, y| x ^ y }
-    prune = Proc.new { |x| x % 16777216 }
-
-    num = secret << 6
-    secret = mix.call(num, secret)
-    secret = prune.call(secret)
-
-    num = secret >> 5
-    secret = mix.call(num, secret)
-    secret = prune.call(secret)
-
-    num = secret << 11
-    secret = mix.call(num, secret)
-    secret = prune.call(secret)
+  def self.evolve_secret(secret, steps = 1)
+    steps.times do
+      secret = ((secret * 64) ^ secret) % 16777216
+      secret = ((secret / 32) ^ secret) % 16777216
+      secret = ((secret * 2048) ^ secret) % 16777216
+    end
 
     secret
   end
@@ -21,14 +12,42 @@ class Day22
   def self.part_1(input)
     input = input.split("\n").map(&:to_i)
 
-    2000.times do
-      input = input.map { |i| Day22.evolve_secret(i) }
+    total = 0
+
+    input.each do |i|
+      total += Day22.evolve_secret(i, 2000)
     end
 
-    return input.sum
+    total
   end
 
   def self.part_2(input)
-    return 0
+    input = input.split("\n").map(&:to_i)
+    answer_hash = Hash.new(0)
+
+    input.each_with_index do |i, idx|
+      out = []
+      _output = Hash.new(0)
+
+      2000.times do
+        j = evolve_secret(i)
+
+        n = (j % 10) - (i % 10)
+        i = j
+
+        out << n
+
+        if out.length >= 4
+          key = out[-4..-1]
+
+          unless _output.key?(key)
+            _output[key] = true
+            answer_hash[key] += j % 10
+          end
+        end
+      end
+    end
+
+    answer_hash.values.max
   end
 end
