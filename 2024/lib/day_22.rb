@@ -1,3 +1,5 @@
+require "set"
+
 class Day22
   def self.evolve_secret(secret, steps = 1)
     steps.times do
@@ -27,24 +29,26 @@ class Day22
 
     input.each_with_index do |i, idx|
       out = []
-      _output = Hash.new(0)
+      _output = Set.new
+      diffs = 0
 
-      2000.times do
-        j = evolve_secret(i)
+      4.times do
+        old_price = i % 10
+        i = evolve_secret(i)
+        new_price = i % 10
+        # adjust range from (-9, 9) to (0, 18) (00000 to 10010)
+        diffs = (diffs << 5) + (new_price - old_price + 9)
+      end
 
-        n = (j % 10) - (i % 10)
-        i = j
+      1996.times do
+        old_price = i % 10
+        i = evolve_secret(i)
+        new_price = i % 10
 
-        out << n
+        diffs = ((diffs & 0x7FFF) << 5) + (new_price - old_price + 9)
 
-        if out.length >= 4
-          key = out[-4..-1]
-
-          unless _output.key?(key)
-            _output[key] = true
-            answer_hash[key] += j % 10
-          end
-        end
+        answer_hash[diffs] += new_price unless _output.include?(diffs)
+        _output << diffs
       end
     end
 
