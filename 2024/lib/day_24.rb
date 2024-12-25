@@ -46,6 +46,64 @@ class Day24
   end
 
   def self.part_2(input)
-    return 0
+    states, rules = parse(input)
+
+    problematic_rules = rules.filter do |rule|
+      if rule.result.start_with?("z")
+        rule.op != :XOR && rule.result != "z45"
+      elsif !"xy".include?(rule.a[0])
+        rule.op == :XOR
+      end
+    end
+
+    puts "Known bad rules: #{problematic_rules.map { |r| r.result }.sort.join(",")}"
+    puts "Look for remaining 2 rules using graphviz output. Then manually solve."
+    puts "Generate svg with `dot -T svg dot.gv -o dot.svg`"
+
+    zs = rules.map { |rule| rule.result }.filter { |result| result.start_with?("z") }.sort.join(" -> ")
+    xs = states.map { |k, v| k }.filter { |k| k.start_with?("x") }.sort.join(" -> ")
+    ys = states.map { |k, v| k }.filter { |k| k.start_with?("y") }.sort.join(" -> ")
+
+    graphs = rules.flat_map do |rule|
+      [
+        "#{rule.a} -> #{rule.result}",
+        "#{rule.b} -> #{rule.result}",
+      ]
+    end.join(" ")
+
+    group = rules.group_by { |r| r.op }
+
+    File.write "./dot.gv", <<~DOT
+                 digraph G {
+                    subgraph {
+                       node [style=filled,color=green]
+                        #{zs}
+                    }
+                    subgraph {
+                        node [style=filled,color=gray]
+                        #{xs}
+                    }
+                    subgraph {
+                        node [style=filled,color=gray]
+                        #{ys}
+                    }
+                    subgraph {
+                        node [style=filled,color=pink]
+                        #{group[:AND].map { |r| r.result }.join(" ")}
+                    }
+                    subgraph {
+                        node [style=filled,color=yellow];
+                        #{group[:OR].map { |r| r.result }.join(" ")}
+                    }
+                    subgraph {
+                        node [style=filled,color=lightblue];
+                        #{group[:XOR].map { |r| r.result }.join(" ")}
+                    }
+                    
+                    #{graphs}
+                   }
+               DOT
+
+    nil
   end
 end

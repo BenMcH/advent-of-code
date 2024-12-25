@@ -72,12 +72,6 @@ class Day24Test < Minitest::Test
   end
 
   def test_part_2
-    skip("Part 2 not yet implemented")
-    assert_equal 1, Day24.part_2(@test_input)
-
-    answer = Day24.part_2(@input)
-    puts "Part 2: #{answer}"
-
-    AdventOfCodeHelpers.submit_answer(24, answer, 2)
+    Day24.part_2(@input)
   end
 end
