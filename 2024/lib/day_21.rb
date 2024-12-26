@@ -47,20 +47,40 @@ class Day21
       queue << [Position.new(pos.x, pos.y - 1), path + "^"]
     end
 
-    return wins
+    return wins.map { |w| w + "A" }
   end
 
-  def self.numpad = "789\n456\n123\n 0A".split("\n").map(&:chars)
+  def self._str_paths(str)
+    @cache ||= {}
 
-  def self.keypad = " ^A\n<v>".split("\n").map(&:chars)
+    return @cache[str] if @cache.key?(str)
+    np = str.split("\n").map(&:chars)
+    np_paths = {}
+    keys = np.flatten.filter { |c| c != " " }
+    keys.each do |a|
+      keys.each do |b|
+        np_paths[a + b] = paths(np, a, b)
+      end
+    end
+
+    @cache[str] = np_paths.freeze
+  end
+
+  def self.numpad
+    _str_paths("789\n456\n123\n 0A")
+  end
+
+  def self.keypad
+    _str_paths(" ^A\n<v>")
+  end
 
   def self.solve(kp_paths, pattern)
     pattern = pattern.chars
 
-    solutions = kp_paths["A#{pattern[0]}"].map { |p| p + "A" }
+    solutions = kp_paths["A" + pattern[0]]
 
     pattern.each_cons(2) do |a, b|
-      ab = kp_paths["#{a}#{b}"].map { |p| p + "A" }
+      ab = kp_paths[a + b]
 
       solutions = solutions.flat_map do |s|
         ab.map { |p| s + p }
@@ -71,48 +91,70 @@ class Day21
   end
 
   def self.part_1(input)
-    np = numpad
-    kp = keypad
-    np_paths = {}
-    kp_paths = {}
-
-    # paths(np, "2", "9")
-
-    keys = np.flatten.filter { |c| c != " " }
-
-    keys.each do |a|
-      keys.each do |b|
-        np_paths["#{a}#{b}"] = paths(np, a, b)
-      end
-    end
-
-    keys = kp.flatten.filter { |c| c != " " }
-
-    keys.each do |a|
-      keys.each do |b|
-        kp_paths["#{a}#{b}"] = paths(kp, a, b)
-      end
-    end
-
     input = input.split("\n")
 
-    input = Parallel.map(input) do |line|
-      solutions = solve(np_paths, line)
+    input = input.map do |line|
+      solutions = solve(numpad, line)
 
-      2.times do
-        solutions = solutions.flat_map do |s|
-          solve(kp_paths, s)
+      opt = Float::INFINITY
+      solutions = solutions.map do |sol|
+        len = 0
+        sol = "A" + sol
+        sol.chars.each_cons(2) do |a, b|
+          len += length_at_depth(a, b)
         end
 
-        min_l = solutions.map(&:length).min
-        solutions = solutions.filter { |s| s.length == min_l }
+        opt = [opt, len].min
       end
 
-      solutions[0].length * line[0..-2].to_i
+      opt * line[0..-2].to_i
     end.sum
   end
 
+  def self.length_at_depth(a, b, depth = 2)
+    kp = keypad[a + b]
+    if depth == 1
+      return kp[0].length
+    end
+    @lengths ||= {}
+    key = a + b + depth.to_s
+    if @lengths.key?(key)
+      return @lengths[key]
+    end
+
+    opt = Float::INFINITY
+    kp.each do |option|
+      len = 0
+      option = "A" + option
+
+      option.chars.each_cons(2) do |a, b|
+        len += length_at_depth(a, b, depth - 1)
+      end
+
+      opt = [opt, len].min
+    end
+
+    @lengths[key] = opt
+  end
+
   def self.part_2(input)
-    return 0
+    input = input.split("\n")
+
+    input = input.map do |line|
+      solutions = solve(numpad, line)
+
+      opt = Float::INFINITY
+      solutions = solutions.map do |sol|
+        len = 0
+        sol = "A" + sol
+        sol.chars.each_cons(2) do |a, b|
+          len += length_at_depth(a, b, 25)
+        end
+
+        opt = [opt, len].min
+      end
+
+      opt * line[0..-2].to_i
+    end.sum
   end
 end
