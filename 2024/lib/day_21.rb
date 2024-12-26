@@ -1,3 +1,5 @@
+require "parallel"
+
 class Day21
   Position = Struct.new(:x, :y)
 
@@ -94,7 +96,7 @@ class Day21
 
     input = input.split("\n")
 
-    input = input.map do |line|
+    input = Parallel.map(input) do |line|
       solutions = solve(np_paths, line)
 
       2.times do
@@ -108,9 +110,6 @@ class Day21
 
       solutions[0].length * line[0..-2].to_i
     end.sum
-
-    # solutions
-    # paths(np, "A", "A")
   end
 
   def self.part_2(input)

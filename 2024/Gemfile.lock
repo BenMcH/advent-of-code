@@ -93,6 +93,7 @@ PLATFORMS
 DEPENDENCIES
   dotenv (~> 3.1)
   minitest (~> 5.25)
+  parallel (~> 1.26)
   rake (~> 13.2)
   rerun (~> 0.14.0)
   ruby-lsp (~> 0.21.3)
