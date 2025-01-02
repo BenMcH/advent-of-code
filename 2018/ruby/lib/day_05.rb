@@ -1,13 +1,10 @@
 class Day05
   def self.part_1(input)
-    input.strip!
+    new_input = input.strip
     loop do
-      new_input = input
-      input.chars.each_cons(2) do |a, b|
-        if a != b && a.casecmp?(b)
-          new_input = new_input.gsub("#{a}#{b}", "")
-          new_input = new_input.gsub("#{b}#{a}", "")
-        end
+      ("a".."z").each do |char|
+        new_input = new_input.gsub("#{char}#{char.upcase}", "")
+        new_input = new_input.gsub("#{char.upcase}#{char}", "")
       end
 
       return new_input.length if new_input == input
