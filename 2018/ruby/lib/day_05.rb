@@ -1,5 +1,5 @@
 class Day05
-  def self.part_1(input)
+  def self.collapse(input)
     new_input = input.strip
     loop do
       ("a".."z").each do |char|
@@ -13,7 +13,16 @@ class Day05
     end
   end
 
+  def self.part_1(input) = collapse(input)
+
   def self.part_2(input)
-    return 0
+    min = Float::INFINITY
+
+    ("a".."z").each do |char|
+      ni = collapse(input.delete("#{char}#{char.upcase}"))
+      min = [min, ni].min
+    end
+
+    min
   end
 end
