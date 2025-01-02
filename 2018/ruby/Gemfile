@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+# gem "rails"
+
+gem "minitest", "~> 5.25"
+
+gem "rake", "~> 13.2"
+
+gem "dotenv", "~> 3.1"
+
+gem "ruby-lsp", "~> 0.21.3", :group => :development
+
+gem "solargraph", "~> 0.48.0"
+
+gem "rerun", "~> 0.14.0", :group => :development
+
+gem "rufo", "~> 0.18.0", :group => :development
+
+gem "parallel", "~> 1.26"

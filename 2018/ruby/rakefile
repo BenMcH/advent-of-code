@@ -1,0 +1,29 @@
+require "rake/testtask"
+
+Rake::TestTask.new do |t|
+  t.pattern = "lib/*_test.rb"
+end
+
+namespace :aoc do
+  task :gen do
+    day = ENV["DAY"] || ENV["day"]
+    padded_day = day.to_s.rjust(2, "0")
+
+    if File.exist?("lib/day_#{padded_day}.rb")
+      puts "Day #{day} already exists"
+      exit
+    end
+
+    process = Proc.new { |string| string.gsub("ZPDAY", padded_day).gsub("DAY", day) }
+    File.write("lib/day_#{padded_day}.rb", process.call(File.read("resources/template.rb")))
+    File.write("lib/day_#{padded_day}_test.rb", process.call(File.read("resources/template_test.rb")))
+  end
+
+  task :test do
+    RubyVM::YJIT.enable
+    day = ENV["DAY"] || ENV["day"]
+    day = day.to_s.rjust(2, "0")
+
+    ruby "lib/day_#{day}_test.rb"
+  end
+end
