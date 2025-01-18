@@ -79,6 +79,36 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
     when 4 # OUTPUT
       take
       self.outputs << param(_modes)[0]
+    when 5 # JUMP-IF-TRUE
+      take
+      a, _modes = param(_modes)
+      b, _modes = param(_modes)
+
+      if a != 0
+        self.pc = b
+      end
+    when 6 # JUMP-IF-FALSE
+      take
+      a, _modes = param(_modes)
+      b, _modes = param(_modes)
+
+      if a == 0
+        self.pc = b
+      end
+    when 7 # LESS-THAN
+      take
+      a, _modes = param(_modes)
+      b, _modes = param(_modes)
+      c = take
+
+      self.program[c] = a < b ? 1 : 0
+    when 8 # EQUALS
+      take
+      a, _modes = param(_modes)
+      b, _modes = param(_modes)
+      c = take
+
+      self.program[c] = a == b ? 1 : 0
     when 99
       self.halted = true
     else
