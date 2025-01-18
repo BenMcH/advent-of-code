@@ -23,7 +23,9 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
     self.outputs = []
   end
 
-  def peek = program[pc]
+  def peek
+    self.program[self.pc]
+  end
 
   def take
     mem = peek
