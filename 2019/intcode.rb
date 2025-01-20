@@ -1,12 +1,13 @@
-Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :outputs) do
+Intcode = Struct.new(:program, :pc, :halted, :inputs, :outputs, :relative_base, :memory) do
   POSITION_MODE = 0
   IMMEDIATE_MODE = 1
+  RELATIVE_MODE = 2
 
   def initialize(*)
     super
 
     if self.program.is_a? String
-      self.original_program = self.program.split(",").map(&:to_i)
+      self.program = self.program.strip.split(",").map(&:to_i)
     end
 
     self.reset
@@ -16,15 +17,20 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
   def verb = self.prgram[2]
 
   def reset
-    self.program = self.original_program.dup
     self.pc = 0
     self.halted = false
     self.inputs = []
     self.outputs = []
+    self.relative_base = 0
+    self.memory = Hash.new do |hash, key|
+      raise "Invalid memory address #{key}" if key < 0
+
+      hash[key] = self.program[key] || 0
+    end
   end
 
   def peek
-    self.program[self.pc]
+    self.memory[self.pc]
   end
 
   def take
@@ -38,14 +44,16 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
     self.inputs << num
   end
 
-  def param(modes)
+  def param(modes, output = false)
     mode = modes % 10
     new_mode = (modes - mode) / 10
 
     val = take
 
-    if mode == POSITION_MODE
-      val = program[val]
+    if mode == POSITION_MODE && !output
+      val = self.memory[val]
+    elsif mode == RELATIVE_MODE
+      val = self.memory[self.relative_base + val]
     end
 
     return val, new_mode
@@ -64,19 +72,29 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
       a, _modes = param(_modes)
       b, _modes = param(_modes)
       c = take
-      self.program[c] = a + b
+
+      c += self.relative_base if _modes == 2
+
+      self.memory[c] = a + b
     when 2 # MULT
       take
       a, _modes = param(_modes)
       b, _modes = param(_modes)
       c = take
-      self.program[c] = a * b
+
+      c += self.relative_base if _modes == 2
+      self.memory[c] = a * b
     when 3 # INPUT
       if inputs.any?
         take
         val = inputs.shift
 
-        self.program[take] = val
+        mem_loc = take
+        if _modes == 2
+          mem_loc += self.relative_base
+        end
+
+        self.memory[mem_loc] = val
       end
     when 4 # OUTPUT
       take
@@ -103,14 +121,23 @@ Intcode = Struct.new(:program, :pc, :halted, :original_program, :inputs, :output
       b, _modes = param(_modes)
       c = take
 
-      self.program[c] = a < b ? 1 : 0
+      c += self.relative_base if _modes == 2
+
+      self.memory[c] = a < b ? 1 : 0
     when 8 # EQUALS
       take
       a, _modes = param(_modes)
       b, _modes = param(_modes)
       c = take
 
-      self.program[c] = a == b ? 1 : 0
+      c += self.relative_base if _modes == 2
+
+      self.memory[c] = a == b ? 1 : 0
+    when 9 # Adjust relative base
+      take
+      a, _modes = param(_modes)
+
+      self.relative_base += a
     when 99
       self.halted = true
     else
