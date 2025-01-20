@@ -21,4 +21,11 @@ raise computer.outputs if computer.outputs.length > 1
 
 puts "Part 1: #{computer.outputs[0]}"
 
+computer.reset
 
+computer.inputs << 2
+computer.step until computer.halted
+
+raise computer.outputs if computer.outputs.length > 1
+
+puts "Part 2: #{computer.outputs[0]}"
