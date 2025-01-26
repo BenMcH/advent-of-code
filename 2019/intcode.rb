@@ -1,4 +1,4 @@
-Intcode = Struct.new(:program, :pc, :halted, :inputs, :outputs, :relative_base, :memory) do
+Intcode = Struct.new(:program, :pc, :halted, :inputs, :outputs, :relative_base, :memory, :waiting_for_input) do
   POSITION_MODE = 0
   IMMEDIATE_MODE = 1
   RELATIVE_MODE = 2
@@ -27,6 +27,8 @@ Intcode = Struct.new(:program, :pc, :halted, :inputs, :outputs, :relative_base, 
 
       hash[key] = self.program[key] || 0
     end
+
+    self.waiting_for_input = false
   end
 
   def peek
@@ -85,7 +87,9 @@ Intcode = Struct.new(:program, :pc, :halted, :inputs, :outputs, :relative_base, 
       c += self.relative_base if _modes == 2
       self.memory[c] = a * b
     when 3 # INPUT
-      if inputs.any?
+      self.waiting_for_input = inputs.empty?
+
+      unless self.waiting_for_input
         take
         val = inputs.shift
 
