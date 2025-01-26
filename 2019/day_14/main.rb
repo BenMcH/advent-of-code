@@ -44,4 +44,27 @@ end
 
 fuel = output_map[:FUEL]
 
+# Part 1
 p count_ore_for_conversion(fuel, output_map)
+
+# Part 2
+TRILLION = 1_000_000_000_000
+
+def can_make_fuel?(amount, output_map)
+  count_ore_for_conversion(output_map[:FUEL], output_map, amount) <= TRILLION
+end
+
+# Binary search for the answer
+low = TRILLION / count_ore_for_conversion(fuel, output_map) # minimum possible
+high = low * 2 # start with a reasonable upper bound
+
+while low < high
+  mid = (low + high + 1) / 2
+  if can_make_fuel?(mid, output_map)
+    low = mid
+  else
+    high = mid - 1
+  end
+end
+
+p low # Maximum amount of fuel we can make
