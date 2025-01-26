@@ -70,7 +70,7 @@ until computer.halted
   if computer.waiting_for_input
     process_outputs.call()
 
-    computer.inputs << -(paddle_x(screen) <=> ball_x(screen))
+    computer.inputs << (ball_x(screen) <=> paddle_x(screen))
   end
 end
 
