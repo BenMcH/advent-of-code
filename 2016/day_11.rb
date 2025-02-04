@@ -30,23 +30,21 @@ def parse_input(input, part2 = false)
 end
 
 def valid_floor?(items)
-  return true if items.empty?
-  generators = items.select { |entry| entry.is_gen }.map(&:id)
-  return true if generators.length == 0
+  return true if items.empty?  # No items means it's valid
+  generators = items.select(&:is_gen).map(&:id)
   
-  # If there are generators, each chip must have its matching generator
-  items.each do |entry|
-    next if entry.is_gen
-    return false unless generators.include?(entry.id)
-  end
-  true
+  return true if generators.empty?  # No generators means it's valid
+
+  # Check if all chips have their corresponding generators
+  items.none? { |entry| !entry.is_gen && !generators.include?(entry.id) }
 end
 
 def next_states(elevator, floors)
   states = []
+  
   current = floors[elevator]
   empty = floors[0...elevator].all?(&:empty?)
-  
+
   # Try moving 1 or 2 items
   [1, 2].each do |count|
     current.combination(count).each do |items|
@@ -57,12 +55,13 @@ def next_states(elevator, floors)
         # Skip moving down if all lower floors are empty
         next if dir == -1 && empty
         
+        # Check if moving items would lead to an invalid state
         new_floors = floors.map(&:dup)
         new_floors[next_floor] += items
         new_floors[elevator] -= items
         
-        next unless valid_floor?(new_floors[elevator]) && 
-                   valid_floor?(new_floors[next_floor])
+        # Early exit if the new state is invalid
+        next unless valid_floor?(new_floors[next_floor]) && valid_floor?(new_floors[elevator])
         
         states << [next_floor, new_floors]
       end
@@ -96,7 +95,7 @@ end
 def solve(floors)
   seen = {}
   queue = [[0, floors, 0]]  # [elevator, floors, steps]
-  
+
   until queue.empty?
     elevator, floors, steps = queue.shift
     
