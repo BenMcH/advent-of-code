@@ -16,6 +16,8 @@ Computer = Struct.new(:instructions) do
   def run(c = 0, a = 0)
     pc = 0
     a, b, c, d = a, 0, c, 0
+    expected_output = 0
+    out_count = 0
     get = Proc.new do |i|
       if i.is_a? Integer
         i
@@ -81,6 +83,18 @@ Computer = Struct.new(:instructions) do
           else
             instruction[0] = instruction[0] == :jnz ? :cpy : :jnz
           end
+        end
+      when :out
+        output = get.call(arg0)
+
+        if output != expected_output
+          return -1
+        else
+          expected_output += 1
+          expected_output %= 2
+
+          out_count += 1
+          return 0 if out_count > 100
         end
       end
 
