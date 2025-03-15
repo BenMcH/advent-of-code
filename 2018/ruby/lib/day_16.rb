@@ -114,6 +114,7 @@ while h.any?
   end
 end
 
+
 registers = [0, 0, 0, 0]
 
 prog.strip.split("\n").each do |line|
