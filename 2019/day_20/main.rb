@@ -1,23 +1,25 @@
+require 'set'
+
 input = File.readlines("./input.txt", chomp: true).map(&:chars)
 
 Point = Struct.new(:x, :y) do
   def neighbors
     [Point.new(x - 1, y),
-    Point.new(x + 1, y),
-    Point.new(x, y - 1),
-    Point.new(x, y + 1)]
+     Point.new(x + 1, y),
+     Point.new(x, y - 1),
+     Point.new(x, y + 1)]
   end
 end
 
 @map = Hash.new("#")
 @sym_locs = Hash.new { |hash, key| hash[key] = [] }
 @sym_map = {}
+@width = input.first.length
+@height = input.length
 
 def is_letter?(str)
   str =~ /[A-Za-z]/
 end
-
-loc = nil
 
 input.each_with_index do |row, y|
   row.each_with_index do |ch, x|
@@ -26,17 +28,17 @@ input.each_with_index do |row, y|
       @map[point] = "."
       
       id = nil
-      if is_letter?(input[y][x-1])
+      if x > 1 && is_letter?(input[y][x-1])
         id = input[y][x-2] + input[y][x-1]
-        @sym_locs[id.to_sym] << point
-      elsif is_letter?(input[y][x+1])
+      elsif x < @width - 2 && is_letter?(input[y][x+1])
         id = input[y][x+1] + input[y][x+2]
-        @sym_locs[id.to_sym] << point
-      elsif is_letter?(input[y-1][x])
+      elsif y > 1 && is_letter?(input[y-1][x])
         id = input[y-2][x] + input[y-1][x]
-        @sym_locs[id.to_sym] << point
-      elsif is_letter?(input[y+1][x])
+      elsif y < @height - 2 && is_letter?(input[y+1][x])
         id = input[y+1][x] + input[y+2][x]
+      end
+
+      if id
         @sym_locs[id.to_sym] << point
       end
     end
@@ -44,44 +46,68 @@ input.each_with_index do |row, y|
 end
 
 @sym_locs.each do |k, v|
-  v.each do |p|
-    @sym_map[p] = k
-  end
+  v.each { |p| @sym_map[p] = k }
 end
-loc = @sym_locs[:AA][0]
 
-min_dist = Float::INFINITY
-states = [[loc, Set.new, 0]] # Include step counter
+start = @sym_locs[:AA][0]
+goal = @sym_locs[:ZZ][0]
 
-def find_min(loc, visited = Set.new, steps = 0, min_dist = Float::INFINITY)
-  return Float::INFINITY if visited.include?(loc) || steps > min_dist
+def is_outer_portal?(point)
+  point.x <= 2 || point.x >= @width - 3 || point.y <= 2 || point.y >= @height - 3
+end
 
-  visited = visited.dup << loc
+def find_min(start, goal, part_2 = false)
+  queue = [[start, 0, 0]] # [position, level, steps]
+  visited = Set.new
   
-  if @sym_map[loc] == :ZZ
-    return steps
-  end
+  until queue.empty?
+    loc, level, steps = queue.shift
 
-  loc.neighbors.each do |pt|
-    next if visited.include?(pt) || @map[pt] != '.'
-    step_offset = 1
-    
-    if @sym_map.key?(pt)
-      target_points = @sym_locs[@sym_map[pt]]
-      other_pt = target_points.find { |p2| p2 != pt }
-      if other_pt
-        pt = other_pt if other_pt
-        step_offset += 1
+    # If we reach the goal (ZZ) at level 0, return the steps taken.
+    return steps if loc == goal && level == 0
+
+    next if visited.include?([loc, level])
+    visited << [loc, level]
+
+    loc.neighbors.each do |pt|
+      next if @map[pt] != '.'
+      
+      if @sym_map.key?(pt)
+        portal_id = @sym_map[pt]
+        target_points = @sym_locs[portal_id]
+        other_pt = target_points.find { |p| p != pt }
+        
+        if part_2
+          # If it's a portal other than AA or ZZ, check the level transition
+          if portal_id != :AA && portal_id != :ZZ
+            if other_pt
+              # Transition levels based on outer or inner portal
+              new_level = is_outer_portal?(pt) ? level - 1 : level + 1
+              next if new_level < 0 # Can't go below level 0
+              queue << [other_pt, new_level, steps + 2]
+              next
+            end
+          end
+        else
+          offset = 2
+
+          if other_pt.nil?
+            other_pt = pt 
+            offset = 1
+          end
+          # next if other_pt.nil?
+          queue << [other_pt, 0, steps + offset]
+          next
+        end
       end
+
+      # Regular movement without a portal
+      queue << [pt, level, steps + 1]
     end
-    
-    min_dist = [
-      min_dist,
-      find_min(pt, visited, steps + step_offset)
-    ].min
   end
   
-  return min_dist
+  return -1 # No solution found
 end
 
-p find_min(loc)
+p find_min(start, goal)
+p find_min(start, goal, true)
