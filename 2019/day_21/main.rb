@@ -5,10 +5,8 @@ input = File.read("./input.txt")
 
 %{NOT B T
 NOT C J
-OR J T
-NOT D J
-NOT J J
-AND T J
+OR T J
+AND D J
 NOT A T
 OR T J
 WALK
@@ -27,4 +25,22 @@ rescue RangeError
   p @computer.outputs[-1]
 end
 
+print_output
+
+@computer.reset
+
+%{NOT B T
+NOT C J
+OR T J
+AND D J
+AND H J
+NOT A T
+OR T J
+RUN
+}.chars.map(&:ord).each do |i|
+  @computer.inputs << i
+end
+
+
+@computer.step until @computer.halted || @computer.waiting_for_input
 print_output
