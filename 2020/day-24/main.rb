@@ -20,8 +20,8 @@ def parse_instructions(line)
   parsed
 end
 
-white = false
-black = true
+@white = false
+@black = true
 
 Tile = Struct.new(:x, :y) do
   def e
@@ -63,9 +63,13 @@ Tile = Struct.new(:x, :y) do
       Tile.new(x-1, y-1)
     end
   end
+
+  def adjacent
+    [e, w, ne, nw, se, sw]
+  end
 end
 
-tiles = Hash.new(white)
+tiles = Hash.new(@white)
 
 starting_tile = Tile.new(0, 0)
 
@@ -75,8 +79,35 @@ instructions.each do |line|
   parse_instructions(line).each do |inst|
     loc = loc.send(inst)
   end
-  tiles[loc] = !tiles[loc]
+  if tiles[loc] == @black
+    tiles.delete(loc)
+  else
+    tiles[loc] = @black
+  end
 end
 
-p tiles.values.count(black)
+p tiles.values.count(@black)
 
+def flip(tiles)
+  n_tiles = Hash.new(@white)
+  check = tiles.keys.flat_map(&:adjacent).uniq
+
+  check.each do |tile|
+    neighbors = tile.adjacent.map { |t| tiles[t] }.tally
+    n_tile = tiles[tile]
+    if tiles[tile] == @black
+      n_tile = @white if neighbors[@black] == 0 || neighbors[@black] > 2
+    else
+      n_tile = @black if neighbors[@black] == 2
+    end
+      n_tiles[tile] = @black if n_tile == @black
+  end
+
+  n_tiles
+end
+
+100.times do
+  tiles = flip(tiles)
+end
+
+p tiles.length
