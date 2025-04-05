@@ -8,36 +8,27 @@ end
 
 current_cup = input[0]
 
-def move(ring, current_cup, min, max)
-  next_1 = ring[current_cup]
-  next_2 = ring[next_1]
-  next_3 = ring[next_2]
+def move(ring, current_cup, min, max, n = 1)
+  n.times do
+    next_1 = ring[current_cup]
+    next_2 = ring[next_1]
+    next_3 = ring[next_2]
 
+    dest = current_cup - 1
+    while dest == 0 || next_1 == dest || next_2 == dest || next_3 == dest
+      dest = dest == 0 ? max : (dest - 1)
+    end
 
-  nexts = [next_1, next_2, next_3]
-
-  raise "next_3 is bad" if ring[next_3].nil?
-  ring[current_cup] = ring[next_3]
-
-  dest = current_cup
-  loop do
-    dest -= 1
-
-    dest = max if dest < min
-    break unless next_1 == dest || next_2 == dest || next_3 == dest
+    ring[current_cup] = ring[next_3]
+    ring[next_3] = ring[dest]
+    ring[dest] = next_1
+    current_cup = ring[current_cup]
   end
-  
-  raise "#{dest} is nil" if ring[dest].nil?
-  ring[next_3] = ring[dest]
-  ring[dest] = next_1
-  next_cup = ring[current_cup]
 
-  return ring, next_cup
+  return current_cup
 end
 
-100.times do
-  ring, current_cup = move(ring, current_cup, 1, 9)
-end
+current_cup = move(ring, current_cup, 1, 9, 100)
 
 r = ring[1]
 until r == 1
@@ -46,12 +37,10 @@ until r == 1
 end
 puts ""
 
-start = input.max + 1
+start = 10
 end_val = 1_000_000
 
-(start..end_val).each do |i|
-  input << i
-end
+input += (start..end_val).to_a
 
 ring = {}
 
@@ -61,13 +50,7 @@ input.each_with_index do |i, idx|
   ring[input[idx-1]] = i
 end
 
-labels = ring.keys
-min = labels.min
-max = labels.max
-
-10_000_000.times do |i|
-  ring, current_cup = move(ring, current_cup, min, max)
-end
+current_cup = move(ring, current_cup, 1, 1_000_000, 10_000_000)
 
 a = ring[1]
 b = ring[a]
