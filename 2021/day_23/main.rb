@@ -1,25 +1,4 @@
-class SimplePQ
-  def initialize
-    @queue = []
-  end
-
-  def push(state)
-    @queue << state
-    @queue.sort_by!(&:energy)
-  end
-
-  def pop
-    @queue.shift
-  end
-
-  def empty?
-    @queue.empty?
-  end
-
-  def size
-    @queue.length
-  end
-end
+require 'algorithms'
 
 min_x = min_y = 0
 max_x = max_y = -Float::INFINITY
@@ -154,8 +133,8 @@ ROOM_INDEX = {
 
 initial_state = State.new(input)
 cost_so_far = { initial_state => 0 }
-pq = SimplePQ.new
-pq.push(initial_state)
+pq = Containers::PriorityQueue.new
+pq.push(initial_state, 0)
 
 while !pq.empty?
   state = pq.pop
@@ -170,7 +149,7 @@ while !pq.empty?
   state.next_states.each do |next_state|
     if cost_so_far[next_state].nil? || next_state.energy < cost_so_far[next_state]
       cost_so_far[next_state] = next_state.energy
-      pq.push(next_state)
+      pq.push(next_state, -next_state.energy)
     end
   end
 end
