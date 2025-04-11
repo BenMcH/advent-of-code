@@ -7,15 +7,20 @@ input = File.read("./input.txt")
 class State
   attr_accessor :hall, :rooms, :energy, :visited
 
-  def initialize(input="")
+  def initialize(input="", part_2=false)
     letters = input.scan(/[A-Z]/)
 
     @hall = [nil] * 11
-    @rooms = [
+    @rooms = part_2 == false ? [
       [letters[0],letters[4]],
       [letters[1],letters[5]],
       [letters[2],letters[6]],
       [letters[3],letters[7]],
+    ] : [
+      [letters[0], "D", "D", letters[4]],
+      [letters[1], "C", "B", letters[5]],
+      [letters[2], "B", "A", letters[6]],
+      [letters[3], "A", "C", letters[7]],
     ]
     @energy = 0
   end
@@ -132,6 +137,29 @@ ROOM_INDEX = {
 }
 
 initial_state = State.new(input)
+cost_so_far = { initial_state => 0 }
+pq = Containers::PriorityQueue.new
+pq.push(initial_state, 0)
+
+while !pq.empty?
+  state = pq.pop
+
+  next if cost_so_far[state] < state.energy # already have cheaper path
+
+  if state.goal?
+    puts "Minimum energy: #{state.energy}"
+    break
+  end
+
+  state.next_states.each do |next_state|
+    if cost_so_far[next_state].nil? || next_state.energy < cost_so_far[next_state]
+      cost_so_far[next_state] = next_state.energy
+      pq.push(next_state, -next_state.energy)
+    end
+  end
+end
+
+initial_state = State.new(input, true)
 cost_so_far = { initial_state => 0 }
 pq = Containers::PriorityQueue.new
 pq.push(initial_state, 0)
