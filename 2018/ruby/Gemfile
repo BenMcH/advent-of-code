@@ -19,3 +19,5 @@ gem "rerun", "~> 0.14.0", :group => :development
 gem "rufo", "~> 0.18.0", :group => :development
 
 gem "parallel", "~> 1.26"
+
+gem "algorithms", "~> 1.0"
