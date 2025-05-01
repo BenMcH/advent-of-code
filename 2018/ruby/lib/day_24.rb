@@ -33,7 +33,7 @@ Unit = Struct.new(
   end
   
   def to_s
-    "#{team}-#{id}"
+    "#{team}-#{id}-#{unit_count}-#{attack_damage}"
     # "#{team} Group #{id}: #{unit_count} units with #{hit_points} HP, #{attack_damage} #{attack_type} damage, initiative #{initiative}" +
     # (weaknesses.empty? ? "" : ", weak to #{weaknesses.join(', ')}") +
     # (immunities.empty? ? "" : ", immune to #{immunities.join(', ')}")
@@ -108,11 +108,12 @@ OPPOSITE_TEAM = {
 def fight(units)
   units.sort_by! { |unit| [-unit.effective_power, -unit.initiative] }
   live_ones = units.select(&:alive?)
+  killed = 0
 
   attacks = {}
   teams = live_ones.group_by(&:team)
 
-  puts(teams.size)
+  # puts(teams.size)
   return false if teams.size < 2
 
   # select targets
@@ -122,7 +123,6 @@ def fight(units)
     target = attackable.max_by { |t| [attacker.damage_to(t), t.effective_power, t.initiative] }
 
     if target && attacker.damage_to(target) > 0
-      p "#{attacker.team} #{attacker.id} -> #{target.id}"
       attacks["#{attacker.team}#{attacker.id}"] = target
     end
   end
@@ -135,20 +135,39 @@ def fight(units)
     next unless target
     damage = attacker.damage_to(target)
     units_lost = target.take_damage(damage)
+    killed += units_lost
 
-    puts "#{attacker.team} group #{attacker.id} attacks defending group #{target.id}, killing #{units_lost} units"
+    # puts "#{attacker.team} group #{attacker.id} attacks defending group #{target.id}, killing #{units_lost} units"
   end
 
-  puts "===================="
-
-  return true
+  # puts "===================="
+  return killed > 0
 end
 
+p1_units = units.map(&:dup)
 
 rounds = 0
+rounds += 1 while fight(p1_units)
+sum = p1_units.map(&:unit_count).sum
+puts "Units remaining: #{sum} after #{rounds} rounds"
+puts "winner: #{p1_units.find(&:alive?).team}"
 
-rounds += 1 while fight(units)
 
-sum = units.select(&:alive?).map(&:unit_count).sum
+# part 2
+boost = 1
+while true
+  p2_units = units.map(&:dup)
+  p2_units.select { |u| u.team == "Immune System" }.each { |u| u.attack_damage += boost }
+  rounds = 0
+  while fight(p2_units) && rounds < 10000
+    rounds += 1
+  end
+  winner = p2_units.select(&:alive?).map(&:team)
+  if winner.uniq == ["Immune System"]
+    p "Units remaining: #{p2_units.map(&:unit_count).sum} after #{rounds} rounds"
+    puts "winner: #{p2_units.find(&:alive?).team}"
+    break
+  end
 
-puts "Units remaining: #{sum}"
+  boost += 1
+end
