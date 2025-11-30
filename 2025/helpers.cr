@@ -30,7 +30,7 @@ class AdventOfCodeHelpers
   end
 
   def self.can_submit?(day : Int32, level : Int32) : Bool
-    file_name = "./inputs/day-#{day}-#{level}.txt"
+    file_name = "./resources/day-#{day}-#{level}.txt"
     if File.exists?(file_name)
       return false
     end
@@ -52,7 +52,7 @@ class AdventOfCodeHelpers
   end
 
   def self.submit_answer(day : Int32, answer : String, level : Int32)
-    file_name = "./inputs/day-#{day}-#{level}.txt"
+    file_name = "./resources/day-#{day}-#{level}.txt"
 
     unless can_submit?(day, level)
       return
@@ -75,7 +75,7 @@ class AdventOfCodeHelpers
     body = res.body
 
     if body.includes?("That's not the right answer")
-      File.write("./inputs/error.html", body)
+      File.write("./resources/error.html", body)
       raise "Incorrect answer"
     end
 
@@ -85,7 +85,7 @@ class AdventOfCodeHelpers
 
     if body.includes?("That's the right answer")
       puts "Correct! Finished Part #{level}"
-      File.write("./inputs/day-#{day}-#{level}.txt", answer)
+      File.write("./resources/day-#{day}-#{level}.txt", answer)
     end
   end
 
