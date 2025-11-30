@@ -1,0 +1,18 @@
+name: aoc2025
+version: 0.1.0
+
+# authors:
+#   - name <email@example.com>
+
+# description: |
+#   Short description of 2025
+
+dependencies:
+  dotenv:
+    github: drum445/dotenv
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr
+
+# license: MIT
