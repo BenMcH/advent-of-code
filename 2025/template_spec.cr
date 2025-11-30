@@ -15,6 +15,8 @@ describe "Day DAY" do
 
       answer =  DayZPDAY.part_1(input)
       puts "Part 1: #{answer}"
+      
+      AdventOfCodeHelpers.submit_answer(DAY, answer.to_s, 1)
     end
   end
 
@@ -28,6 +30,8 @@ describe "Day DAY" do
 
       answer =  DayZPDAY.part_2(input)
       puts "Part 2: #{answer}"
+      
+      AdventOfCodeHelpers.submit_answer(DAY, answer.to_s, 2)
     end
   end
 end
