@@ -52,8 +52,6 @@ class AdventOfCodeHelpers
   end
 
   def self.submit_answer(day : Int32, answer : String, level : Int32)
-    file_name = "./resources/day-#{day}-#{level}.txt"
-
     unless can_submit?(day, level)
       return
     end
@@ -108,15 +106,15 @@ class AdventOfCodeHelpers
     ]
   end
 
-  def self.is_upper(letter : String)
+  def self.upper?(letter : String)
     letter == letter.upcase
   end
 
   def self.get_ints(str : String) : Array(Int32)
     regex = /-?\d+/
     matches = [] of Int32
-    str.scan(regex) do |m|
-      s = m[0]
+    str.scan(regex) do |int_match|
+      s = int_match[0]
       matches << s.to_i32
     end
     matches
@@ -125,8 +123,8 @@ class AdventOfCodeHelpers
   def self.get_numbers(str : String) : Array(Float64)
     regex = /-?\d+\.\d+|-?\d+/
     matches = [] of Float64
-    str.scan(regex) do |m|
-      s = m[0]
+    str.scan(regex) do |float_match|
+      s = float_match[0]
       matches << (s.includes?(".") ? s.to_f64 : s.to_f64)
     end
     matches
@@ -141,11 +139,10 @@ class AdventOfCodeHelpers
   end
 
   def self.rotate_ccw(arr : Array(Array(T))) forall T
-    arr.transpose.reverse
+    arr.transpose.reverse!
   end
 
   def self.rotate_cw(arr : Array(Array(T))) forall T
     arr.reverse.transpose
   end
 end
-

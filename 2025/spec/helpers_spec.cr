@@ -79,25 +79,25 @@ describe AdventOfCodeHelpers do
       AdventOfCodeHelpers.is_upper("Abc").should be_false
     end
   end
-  
+
   describe ".get_ints" do
-	it "extracts integers from string" do
-	  input = "abc 123 def 456"
-	  result = AdventOfCodeHelpers.get_ints(input)
-	  result.should eq [123, 456]
-	end
+    it "extracts integers from string" do
+      input = "abc 123 def 456"
+      result = AdventOfCodeHelpers.get_ints(input)
+      result.should eq [123, 456]
+    end
 
-	it "extracts negative integers" do
-	  input = "value is -42"
-	  result = AdventOfCodeHelpers.get_ints(input)
-	  result.should eq [-42]
-	end
+    it "extracts negative integers" do
+      input = "value is -42"
+      result = AdventOfCodeHelpers.get_ints(input)
+      result.should eq [-42]
+    end
 
-	it "returns empty array when no integers" do
-	  input = "no numbers here"
-	  result = AdventOfCodeHelpers.get_ints(input)
-	  result.should eq [] of Int32
-	end
+    it "returns empty array when no integers" do
+      input = "no numbers here"
+      result = AdventOfCodeHelpers.get_ints(input)
+      result.should eq [] of Int32
+    end
   end
 
   describe ".get_numbers" do
