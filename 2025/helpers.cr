@@ -61,13 +61,13 @@ class AdventOfCodeHelpers
     a = gets.try &.chomp
     return unless a
 
-    if a[0].downcase != 'y'
+    unless a.downcase.starts_with? "y"
       return
     end
 
     year = ENV["AOC_YEAR"]? || "2025"
     session = ENV["AOC_SESSION"]?
-    headers = HTTP::Headers{"Cookie" => "session=#{session}", "User-Agent" => "Ben McHone <ben@mchone.dev>"}
+    headers = HTTP::Headers{"Cookie" => "session=#{session}", "User-Agent" => "Ben McHone <ben@mchone.dev>", "Content-Type" => "application/x-www-form-urlencoded"}
     res = HTTP::Client.post("https://adventofcode.com/#{year}/day/#{day}/answer", body: "level=#{level}&answer=#{answer}", headers: headers)
 
     body = res.body

@@ -64,19 +64,19 @@ describe AdventOfCodeHelpers do
 
   describe ".is_upper" do
     it "returns true for uppercase letter" do
-      AdventOfCodeHelpers.is_upper("A").should be_true
+      AdventOfCodeHelpers.upper?("A").should be_true
     end
 
     it "returns false for lowercase letter" do
-      AdventOfCodeHelpers.is_upper("a").should be_false
+      AdventOfCodeHelpers.upper?("a").should be_false
     end
 
     it "returns true for uppercase string" do
-      AdventOfCodeHelpers.is_upper("ABC").should be_true
+      AdventOfCodeHelpers.upper?("ABC").should be_true
     end
 
     it "returns false for mixed case" do
-      AdventOfCodeHelpers.is_upper("Abc").should be_false
+      AdventOfCodeHelpers.upper?("Abc").should be_false
     end
   end
 

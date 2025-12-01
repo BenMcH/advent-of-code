@@ -24,6 +24,7 @@ describe "Day 1" do
 
       answer = Day01.part_1(input)
       puts "Part 1: #{answer}"
+      AdventOfCodeHelpers.submit_answer(1, answer.to_s, 1)
     end
   end
 
@@ -35,6 +36,7 @@ describe "Day 1" do
 
       answer = Day01.part_2(input)
       puts "Part 2: #{answer}"
+      AdventOfCodeHelpers.submit_answer(1, answer.to_s, 2)
     end
   end
 end
