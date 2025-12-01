@@ -1,27 +1,22 @@
 class Day01
+  private def self.parse_lines(input : String)
+    input.lines.map(&.strip).reject(&.empty?)
+  end
+
+  private def self.move_delta(direction : Char) : Int32
+    direction == 'L' ? -1 : 1
+  end
+
   def self.part_1(input : String) : Int32
     num = 50
-
-    lines = input.lines.map(&.strip).reject(&.empty?)
-
     zeros = 0
 
-    lines.each do |line|
+    parse_lines(input).each do |line|
       direction = line[0]
       distance = line[1..].to_i
 
-      case direction
-      when 'L'
-        num -= distance
-      when 'R'
-        num += distance
-      end
-
-      num = num % 100
-
-      if num == 0
-        zeros += 1
-      end
+      num = (num + move_delta(direction) * distance) % 100
+      zeros += 1 if num == 0
     end
 
     zeros
@@ -29,37 +24,17 @@ class Day01
 
   def self.part_2(input : String) : Int32
     num = 50
-
-    lines = input.lines.map(&.strip).reject(&.empty?)
-
     zeros = 0
 
-    lines.each do |line|
+    parse_lines(input).each do |line|
       direction = line[0]
       distance = line[1..].to_i
+      delta = move_delta(direction)
 
-      case direction
-      when 'L'
-        while distance > 0
-          num -= 1
-          distance -= 1
-
-          if num % 100 == 0
-            zeros += 1
-          end
-        end
-      when 'R'
-        while distance > 0
-          num += 1
-          distance -= 1
-
-          if num % 100 == 0
-            zeros += 1
-          end
-        end
+      distance.times do
+        num = (num + delta) % 100
+        zeros += 1 if num == 0
       end
-
-      num = num % 100
     end
 
     zeros
