@@ -146,3 +146,49 @@ class AdventOfCodeHelpers
     arr.reverse.transpose
   end
 end
+
+struct Point
+  property x : Int32
+  property y : Int32
+
+  def initialize(@x : Int32, @y : Int32)
+  end
+
+  def neighbors_8 : Array(Point)
+    [
+      up.left,
+      up,
+      up.right,
+      left,
+      right,
+      down.left,
+      down,
+      down.right,
+    ]
+  end
+
+  def neighbors_4 : Array(Point)
+    [
+      up,
+      down,
+      left,
+      right,
+    ]
+  end
+
+  def up : Point
+    Point.new(self.x, self.y - 1)
+  end
+
+  def down : Point
+    Point.new(self.x, self.y + 1)
+  end
+
+  def left : Point
+    Point.new(self.x - 1, self.y)
+  end
+
+  def right : Point
+    Point.new(self.x + 1, self.y)
+  end
+end

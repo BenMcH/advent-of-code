@@ -1,16 +1,17 @@
-alias PointTuple = Tuple(Int32, Int32)
+require "../helpers"
 
 class Day07
   def self.parse_board(input : String)
-    board = Set(PointTuple).new
-    start_pos = {0, 0}
+    board = Set(Point).new
+    start_pos = Point.new(0, 0)
 
     input.lines.each_with_index do |line, y|
       line.chars.each_with_index do |char, x|
-        board << {x, y} if char == '^'
+        point = Point.new(x, y)
+        board << point if char == '^'
 
         if char == 'S'
-          start_pos = {x, y}
+          start_pos = point
         end
       end
     end
@@ -22,48 +23,46 @@ class Day07
     board, to_visit = parse_board(input)
     max_y = input.lines.size
 
-    visited = Set(PointTuple).new
-    board_visits = Set(PointTuple).new
+    visited = Set(Point).new
+    board_visits = Set(Point).new
 
     while to_visit.size > 0
       cell, *to_visit = to_visit
 
-      next if visited.includes?(cell) || cell[1] > max_y
+      next if visited.includes?(cell) || cell.y > max_y
       visited.add(cell)
 
-      x, y = cell
-      down = board.includes?({x, y + 1})
+      down = cell.down
 
-      if down
-        board_visits.add({x, y + 1})
-        to_visit << {x - 1, y + 1}
-        to_visit << {x + 1, y + 1}
+      if board.includes?(down)
+        board_visits.add(down)
+        to_visit << down.left
+        to_visit << down.right
       else
-        to_visit << {x, y + 1}
+        to_visit << down
       end
     end
 
     board_visits.size
   end
 
-  def self.count_splits(board : Set(PointTuple), cell : PointTuple, cache = Hash(PointTuple, Int64).new) : Int64
-    x, y = cell
-    max_y = board.map { |d| d[1] }.max || 0
-    return 1_i64 if y > max_y
+  def self.count_splits(board : Set(Point), cell : Point, cache = Hash(Point, Int64).new) : Int64
+    max_y = board.map { |d| d.y }.max || 0
+    return 1_i64 if cell.y > max_y
 
-    if cache.keys.includes?(cell)
+    if cache.has_key?(cell)
       return cache[cell]
     end
-    down = board.includes?({x, y + 1})
+    down = cell.down
 
-    unless down
-      result = count_splits(board, {x, y + 1}, cache)
+    unless board.includes?(down)
+      result = count_splits(board, down, cache)
       cache[cell] = result
       return result
     end
 
-    left_splits = count_splits(board, {x - 1, y + 1}, cache)
-    right_splits = count_splits(board, {x + 1, y + 1}, cache)
+    left_splits = count_splits(board, down.left, cache)
+    right_splits = count_splits(board, down.right, cache)
 
     result = left_splits + right_splits
 
