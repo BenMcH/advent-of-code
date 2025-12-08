@@ -28,21 +28,16 @@ input = AdventOfCodeHelpers.get_input(8)
 describe "Day 8" do
   describe "Part 1" do
     it "should pass the test input" do
-      Day08.part_1(test_input, 10).should eq(40)
+      Day08.solve(test_input, 10).should eq({40, 25272})
 
-      answer = Day08.part_1(input, 1000)
-      puts "Part 1: #{answer}"
-      AdventOfCodeHelpers.submit_answer(8, answer.to_s, 1)
-    end
-  end
-
-  describe "Part 2" do
-    it "should pass the test input" do
-      Day08.part_2(test_input).should eq(25272)
-
-      answer = Day08.part_2(input)
-      puts "Part 2: #{answer}"
-      AdventOfCodeHelpers.submit_answer(8, answer.to_s, 2)
+      answer = Day08.solve(input, 1000)
+      raise "Unexpected answer #{answer}" if answer == nil
+      unless answer.nil?
+        puts "Part 1: #{answer[0]}"
+        puts "Part 2: #{answer[1]}"
+        AdventOfCodeHelpers.submit_answer(8, answer[0].to_s, 1)
+        AdventOfCodeHelpers.submit_answer(8, answer[1].to_s, 2)
+      end
     end
   end
 end

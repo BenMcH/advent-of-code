@@ -35,34 +35,25 @@ class Day08
     end
   end
 
-  def self.part_1(input : String, num_connections : Int32) : Int64
+  def self.solve(input : String, num_connections : Int32)
     circuits, distances = parse(input)
 
-    while num_connections > 0 && !distances.empty?
-      distance_info = distances.shift
-      box1, box2 = distance_info
-
-      make_connection(circuits, box1, box2)
-      num_connections -= 1
-    end
-
-    circuits.map(&.size).sort.reverse[0..2].product.to_i64
-  end
-
-  def self.part_2(input : String) : Int64
-    circuits, distances = parse(input)
+    part_1 = 0i64
 
     while circuits.size > 1
       distance_info = distances.shift
       box1, box2 = distance_info
 
       make_connection(circuits, box1, box2)
+      num_connections -= 1
+
+      if num_connections == 0
+        part_1 = circuits.map(&.size).sort.reverse[0..2].product.to_i64
+      end
 
       if circuits.size == 1
-        return (box1[0] * box2[0])
+        return part_1, box1[0] * box2[0]
       end
     end
-
-    0i64
   end
 end
