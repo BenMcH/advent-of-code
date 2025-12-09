@@ -27,8 +27,8 @@ describe "Day 9" do
   end
 
   describe "Part 2" do
-    it "should pass the test input", tags: "skip" do
-      Day09.part_2(test_input).should eq(1)
+    it "should pass the test input" do
+      Day09.part_2(test_input).should eq(24)
 
       answer = Day09.part_2(input)
       puts "Part 2: #{answer}"
