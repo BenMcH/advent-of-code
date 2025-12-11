@@ -1,3 +1,5 @@
+require "z3"
+
 class Day10
   struct Input
     property pattern : Array(Int32)
@@ -5,6 +7,76 @@ class Day10
     property joltage : Array(Int32)
 
     def initialize(@pattern, @buttons, @joltage)
+    end
+
+    private def create_solver_with_limit(buttons : Array(Z3::IntExpr), max_total : Int32?) : Z3::Solver
+      solver = Z3::Solver.new
+
+      @buttons.size.times.each do |i|
+        button_var = buttons[i]
+        button_cells = @buttons[i][1]
+
+        min_joltage = button_cells.zip(@joltage).map do |affects, joltage|
+          affects == 1 ? joltage : 999
+        end.min
+
+        solver.assert button_var >= 0
+        solver.assert button_var <= min_joltage
+      end
+
+      @joltage.size.times.each do |cell_idx|
+        affecting_buttons = [] of Z3::IntExpr
+        @buttons.size.times.each do |btn_idx|
+          if @buttons[btn_idx][1][cell_idx] == 1
+            affecting_buttons << buttons[btn_idx]
+          end
+        end
+
+        if affecting_buttons.empty?
+          solver.assert Z3::IntSort[0] == @joltage[cell_idx]
+        else
+          sum = Z3::IntSort[0]
+          affecting_buttons.each do |btn|
+            sum = sum + btn
+          end
+          solver.assert sum == @joltage[cell_idx]
+        end
+      end
+
+      if max_total
+        total = Z3::IntSort[0]
+        buttons.each do |btn|
+          total = total + btn
+        end
+        solver.assert total <= max_total
+      end
+
+      solver
+    end
+
+    def solve_z3
+      buttons = @buttons.size.times.map { |i| Z3.int("b_#{i}") }.to_a
+
+      solver = create_solver_with_limit(buttons, nil)
+      return 0 unless solver.satisfiable?
+
+      upper = buttons.sum { |b| solver.model.eval(b).to_i }
+      lower = 0
+      best = upper
+
+      while lower < upper
+        mid = (lower + upper) // 2
+        test_solver = create_solver_with_limit(buttons, mid)
+
+        if test_solver.satisfiable?
+          best = mid
+          upper = mid
+        else
+          lower = mid + 1
+        end
+      end
+
+      best
     end
 
     def self.parse(line : String) : Input
@@ -62,6 +134,6 @@ class Day10
   end
 
   def self.part_2(input : String) : Int32
-    0
+    input.lines.sum { |line| Input.parse(line).solve_z3 }
   end
 end

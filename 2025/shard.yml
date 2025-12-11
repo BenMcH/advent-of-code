@@ -10,7 +10,8 @@ version: 0.1.0
 dependencies:
   dotenv:
     github: drum445/dotenv
-
+  z3:
+    github: taw/crystal-z3
 # development_dependencies:
 #   webmock:
 #     github: manastech/webmock.cr
