@@ -29,10 +29,22 @@ describe "Day 11" do
   end
 
   describe "Part 2" do
-    it "should pass the test input", tags: "skip" do
-      test_input = test_input.strip
+    it "should pass the test input" do
+      test_input = "svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out".strip
 
-      Day11.part_2(test_input).should eq(1)
+      Day11.part_2(test_input).should eq(2)
 
       answer = Day11.part_2(input)
       puts "Part 2: #{answer}"
