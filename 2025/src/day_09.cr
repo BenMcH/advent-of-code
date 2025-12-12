@@ -36,7 +36,7 @@ class Day09
 
     points.each_combination(2) do |points|
       x1, y1, x2, y2 = points.flatten
-      
+
       x_min = [x1, x2].min.to_i64
       x_max = [x1, x2].max.to_i64
       y_min = [y1, y2].min.to_i64
@@ -44,18 +44,17 @@ class Day09
 
       size = (x_max - x_min + 1) * (y_max - y_min + 1)
 
-      areas << { Point.new(x1, y1), Point.new(x2, y2), -size.to_i64 }
+      areas << {Point.new(x1, y1), Point.new(x2, y2), -size.to_i64}
     end
-    
+
     areas.unstable_sort_by!(&.last)
 
     valid_max_size = 0_i64
     areas.each do |area|
       a, b, size = area
-      
+
       x_min, x_max = [a.x, b.x].minmax
       y_min, y_max = [a.y, b.y].minmax
-      
 
       valid_max_size = -size
       break if map.all? { |k| k.x <= x_min || k.x >= x_max || k.y <= y_min || k.y >= y_max }
